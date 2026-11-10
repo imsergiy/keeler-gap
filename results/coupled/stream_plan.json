@@ -1,0 +1,21 @@
+{
+  "initial_centres_xy_m": [
+    [
+      21000.0,
+      287671.0569944064
+    ],
+    [
+      23000.0,
+      365435.75462141825
+    ]
+  ],
+  "predicted_meeting_orbits": 4.0,
+  "predicted_meeting_xy_m": [
+    21605.247872142518,
+    -495725.3066312882
+  ],
+  "point_track_residual_m": 1.4422640287282864e-06,
+  "predicted_relative_speed_m_s": 0.2021063035617319,
+  "no_moon_point_track_separation_m": 3098.41877620737,
+  "selection": "Two initially circular upstream regions in the same outer strip, selected from gravity-predicted crossing orbits. No post-encounter velocity is supplied."
+}
