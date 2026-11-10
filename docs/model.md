@@ -54,9 +54,11 @@ The normal restitution coefficient is a constant 0.5. Smooth spheres have no spi
 
 The vertical extent is 64 root cells. REBOUND's shear boundary also wraps vertically. We therefore provide a much taller box and reject outputs whose vertical oscillator amplitude approaches one quarter of that extent. Zero vertical ghost boxes alone do not disable vertical wrapping. This is covered by a regression test.
 
+An additional high-energy control uses radial dispersion 0.09 m/s, the Bridges law, and 1 s and 0.5 s steps. This input speed is about one third of the 20 km encounter’s radial epicycle speed. The input remains random and homogeneous; it is not a coupled encounter simulation.
+
 Time steps are 2 s in the base case, 1 s for the 1 m grains and the time-step control, and 0.5 s for the elastic control. At each output, the code rejects `maximum peculiar speed * dt / radius > 0.3`. This is a sampled diagnostic, not a proof that every impact is resolved. A half-step run tests the resulting statistics. Close packing or sustained contacts would require a soft-sphere solver. The current results cannot validate that regime.
 
-RMS height subtracts the mean height. The 99th percentile uses absolute height above the reference plane. Vertical specific oscillator energy is `mean(vz^2 + n^2 z^2)/2`. In a collisionless control it stays constant even when phases mix. This distinguishes energy loss from a change in the appearance of an ensemble.
+RMS height subtracts the mean height. The 99th percentile uses absolute height above the reference plane. Vertical specific oscillator energy is `mean(vz^2 + n^2 z^2)/2`. In a collisionless control it stays constant even when phases mix. This distinguishes energy loss from a change in the appearance of an ensemble. With self-gravity, this quantity excludes mutual gravitational potential energy and is not a closed energy budget.
 
 The imposed horizontal motion is random and homogeneous. It is not the coherent, kilometer-scale streamline crossing produced by Daphnis. The box can show that collisions convert horizontal energy into vertical motion and later remove energy. It cannot measure the downstream damping length of the gap edge.
 

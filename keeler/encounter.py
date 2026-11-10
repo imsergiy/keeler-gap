@@ -1,4 +1,4 @@
-"""Restricted Hill encounters, with SI inputs and Hill-unit integration."""
+"""Restricted Hill encounters; input lengths use SI, integration uses Hill units."""
 from dataclasses import asdict, dataclass
 import numpy as np
 from scipy.integrate import solve_ivp

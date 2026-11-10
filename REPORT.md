@@ -21,7 +21,7 @@ The nominal moon Hill radius is 4.861 km and the local orbital period is 14.292 
 | 21 | 0.109 | 1.961 |
 | 25 | 0.037 | 1.317 |
 
-These are **guiding-center changes**, not radial excursions. The calculation uses the Hill approximation to semimajor axis. At 20 km offset the permanent change is about 0.15 km, while the radial epicycle amplitude is about 2.21 km. It would be incorrect to call that entire 2.21 km a semimajor-axis increase.
+These are **guiding-center changes**, not radial excursions. Most of the collisionless change occurs near the encounter, within about one orbit. It does not reproduce a new kilometer-scale increase accumulated over several downstream orbits. The calculation uses the Hill approximation to semimajor axis. At 20 km offset the permanent change is about 0.15 km, while the radial epicycle amplitude is about 2.21 km. It would be incorrect to call that entire 2.21 km a semimajor-axis increase.
 
 For a circular, coplanar moon, the Jacobi invariant connects the scattering to the epicycle energy. Far upstream and downstream, it gives `3 X²/4 - A² = constant` in Hill units. An encounter that excites a radial epicycle therefore also moves an outer particle's guiding center outward. In the weak limit, `delta X` is approximately `2 A² / (3 b)`. The inner particle moves inward. No grain-size parameter occurs in this massless-particle calculation.
 
@@ -49,7 +49,7 @@ At fixed surface density and material density, optical depth scales as `1/R` for
 
 ## Vertical heating and damping
 
-The base experiment contains actual 2 m radius grains, with surface density 300 kg/m² and material density 450 kg/m³. The box is 128 m wide in each horizontal direction. The imposed radial velocity dispersion is 0.02 m/s. It represents an already excited patch; it is not obtained by feeding the encounter solution into a collision model.
+The base experiment contains actual 2 m radius grains, with surface density 300 kg/m² and material density 450 kg/m³. The box is 128 m wide in each horizontal direction. The imposed radial velocity dispersion is 0.02 m/s. It represents an already excited patch; it is not obtained by feeding the encounter solution into a collision model. Its random motions allow collisions immediately, so it cannot predict a delayed maximum at the second edge wave.
 
 The inelastic control rises from about 5 m RMS height to about 85.8 m at 0.275 orbits, then reaches about 41.1 m after three orbits. The no-collision control stays near 5 m. Its vertical oscillator energy is constant to numerical precision. The elastic control continues to heat through work from the shear. These differences show conversion and dissipation without an imposed settling time.
 
@@ -59,11 +59,42 @@ An energy check is useful before a height fit. A 0.5–1.5 km vertical oscillato
 
 The physical collision frequency depends on number density, cross section, relative speed, and vertical thickness. A rough dilute estimate scales with `tau * n`; this is a scaling argument, not a damping fit. At fixed surface density, changing radius changes both optical depth and the particle number. Mutual gravity can change clumping and contact speeds. The radius, gravity, box-size, time-step, and seed controls are therefore part of the study. The initial radial Toomre parameter of this hot box is about 36. It is not an equilibrium, cold self-gravity-wake model. The critical self-gravity wavelength for its surface density is about 53 m, so the small box also samples few such wavelengths.
 
-<!-- grain-results -->
+All 19 experiments and their exact settings are recorded in [the summary](results/box_summary.csv) and the per-case JSON files. The following runs each cover three orbits. Heights are in meters.
+
+| Case | Grains | Optical depth | Peak RMS height | Final RMS height | Peak altitude percentile (99%) |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| No collisions, 2 m | 326 | 0.250 | 5.4 | 5.2 | 14.2 |
+| Elastic, 2 m | 326 | 0.250 | 334.7 | 334.7 | 912.5 |
+| Inelastic, 1 m | 2608 | 0.500 | 84.1 | 21.1 | 213.0 |
+| Inelastic, 2 m | 326 | 0.250 | 85.8 | 41.1 | 222.1 |
+| Inelastic, 4 m | 41 | 0.126 | 73.1 | 58.7 | 185.0 |
+| Inelastic, 4 m, larger box | 163 | 0.125 | 79.7 | 54.4 | 198.7 |
+| Inelastic + gravity, 2 m | 326 | 0.250 | 83.2 | 39.5 | 227.3 |
+| Ice law, 2 m | 326 | 0.250 | 74.1 | 24.5 | 186.2 |
+| Higher energy, ice law, 0.5 s | 326 | 0.250 | 329.3 | 75.4 | 831.9 |
+
+![Collision controls](results/collisions.png)
+
+At fixed surface density, the 1 m, 2 m, and 4 m controls end at about 21 m, 41 m, and 59 m RMS height. The 1 m repeat ends at 20.4 m. The larger 4 m box ends at 54.4 m. The trend agrees with more frequent collisions for smaller grains at higher optical depth. These results do not isolate a grain-size effect at fixed optical depth, and they do not determine the real size distribution.
+
+The three base seeds end between 37.4 m and 41.1 m. The self-gravity case ends at 39.5 m, within that range. This one hot patch does not establish a general gravity correction to damping. The velocity-dependent ice law ends at 24.5 m, which shows the importance of the collision-law assumption.
+
+![Size and numerical sensitivity](results/sensitivity.png)
+
+Halving the base time step raises final RMS height from 41.1 m to 43.8 m, about 7%. Doubling the box width gives 42.5 m. These changes and the seed variation limit the precision of the reported cooling trends. At half an orbit in the gravity controls, changes to the step, tree opening angle, and ghost range change vertical oscillator energy by roughly 2%, while RMS height changes by up to 10%. This is not a proof of late-time convergence.
+
+The saved start, middle, and end snapshots show no grain centers separated by less than 90% of the contact distance in any colliding case. The collisionless control has such overlaps, as expected when collisions are disabled. [The contact check](results/contact_checks.json) samples three snapshots; it does not bound every impact.
+
 
 The base heights are below the reported 0.5–1.5 km structures. The initial horizontal energy was deliberately much lower than the strongest moon encounters. Scaling this box's height by an arbitrary factor would change collision rates and gravitational coupling, so it would not validate a kilometer-high wall. In addition, RMS height, maximum particle altitude, and an optically visible shadow-casting wall are different measurements.
 
 [Recent full N-body work](https://arxiv.org/abs/2504.10989) favors collision-driven walls, with eccentric forcing controlling their strength and location. That is evidence from the cited work. It is not a result independently established by these local boxes.
+
+The additional benchmark uses 0.09 m/s radial dispersion and the velocity-dependent ice law. In the finer 0.5 s run, peak RMS height is 329 m and peak 99th-percentile altitude is **832 m**. After three orbits, that altitude percentile is 203 m. Thus actual grain impacts can supply the reported height scale with an input speed below the encounter’s available speed. The input remains imposed and unphased, and a particle percentile is not an optically visible wall.
+
+The 1 s run gives a peak altitude percentile of 812 m, about 2% below the finer result. However, halving the step changes the last-orbit mean vertical oscillator energy by about **18%** and the mean RMS height by about **8%**, relative to the larger-step values. These are time averages on the same interval, from orbit two to orbit three; [the comparison file](results/energy_step_comparison.json) records the calculation. The rough height scale is stable across these two runs; the quantitative cooling curve is not converged. A fitted observed damping rate would therefore be unsupported.
+
+![Higher-energy height check](results/height_scale.png)
 
 At a chosen solar elevation of 1°, a 1 km height casts a 57.3 km shadow on a flat plane. This follows from `length = height / tan(elevation)`. The actual image needs its solar elevation, azimuth, camera projection, obscuration, and optical threshold. The supplied caption alone does not provide that full geometry.
 

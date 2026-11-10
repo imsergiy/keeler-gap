@@ -41,7 +41,7 @@ def main():
     axes[1,1].legend(fontsize=8)
     fig.savefig(d/'encounters.png',dpi=160)
     plt.close(fig)
-    names=[('no_collisions','No collisions'),('inelastic','Inelastic e=0.5'),('elastic','Elastic e=1'),('self_gravity','Inelastic + self-gravity')]
+    names=[('no_collisions','No collisions'),('inelastic','Inelastic e=0.5'),('elastic','Elastic e=1'),('self_gravity','Inelastic + self-gravity'),('bridges','Velocity-dependent ice law')]
     if all((d/f'box_{name}.csv').exists() for name,_ in names):
         fig,ax=plt.subplots(1,2,figsize=(11,4),layout='constrained')
         for name,label in names:
@@ -68,6 +68,31 @@ def main():
         ax[0].legend(fontsize=8);ax[1].legend(fontsize=8)
         fig.savefig(d/'sensitivity.png',dpi=160)
         plt.close(fig)
+    energy_cases=[('encounter_energy','1 s step'),('encounter_energy_half_step','0.5 s step')]
+    if all((d/f'box_{name}.csv').exists() for name,_ in energy_cases):
+        fig,ax=plt.subplots(1,2,figsize=(11,4),layout='constrained')
+        for name,label in energy_cases:
+            a=np.loadtxt(d/f'box_{name}.csv',delimiter=',',skiprows=1)
+            ax[0].plot(a[:,0],a[:,1]/1000,label=label)
+            ax[1].plot(a[:,0],a[:,2]/1000,label=label)
+        ax[0].set(xlabel='Orbits',ylabel='RMS height (km)',title='Imposed radial dispersion 0.09 m/s; Bridges law')
+        ax[1].axhspan(.5,1.5,alpha=.13,color='gray',label='Reported wall heights')
+        ax[1].set(xlabel='Orbits',ylabel='99th percentile of absolute altitude (km)',title='Particle percentile; no optical visibility model')
+        ax[0].legend(fontsize=8);ax[1].legend(fontsize=8)
+        fig.savefig(d/'height_scale.png',dpi=160)
+        plt.close(fig)
+        grid=np.linspace(2,3,401)
+        means={}
+        for name,_ in energy_cases:
+            a=np.loadtxt(d/f'box_{name}.csv',delimiter=',',skiprows=1)
+            means[name]={key:float(np.trapezoid(np.interp(grid,a[:,0],a[:,column]),grid))
+                         for key,column in [('rms_height_m',1),('vertical_energy_J_kg',6)]}
+        comparison={'interval_orbits':[2,3],'time_means':means,
+                    'percent_change_when_halving_step':{
+                        key:100*(means['encounter_energy_half_step'][key]/means['encounter_energy'][key]-1)
+                        for key in means['encounter_energy']}}
+        (d/'energy_step_comparison.json').write_text(json.dumps(comparison,indent=2,allow_nan=False)+'\n')
+
     tau=np.linspace(0,1.5,300)
     f=.2
     mean_tau=.5
@@ -79,9 +104,9 @@ def main():
     fig.savefig(d/'optics.png',dpi=160)
     plt.close(fig)
     rows=[]
-    for file in sorted(d.glob('box_*.csv')):
-        a=np.loadtxt(file,delimiter=',',skiprows=1)
-        meta=json.loads(file.with_suffix('.json').read_text())
+    for file in sorted(d.glob('box_*.json')):
+        a=np.loadtxt(file.with_suffix('.csv'),delimiter=',',skiprows=1)
+        meta=json.loads(file.read_text())
         peak=int(np.argmax(a[:,1]))
         rows.append([file.stem.removeprefix('box_'),meta['particles'],meta['tau'],
                      a[peak,0],a[peak,1],a[-1,1],a[-1,2],a[-1,6],meta['seconds']])

@@ -86,14 +86,16 @@ def boxes(out, extended, selected):
              'larger_box':replace(baseline,size_m=256),
              'seed_43':replace(baseline,seed=43),
              'seed_44':replace(baseline,seed=44),
-             'bridges':replace(baseline,restitution='bridges')}
+             'bridges':replace(baseline,restitution='bridges'),
+             'encounter_energy':replace(baseline,restitution='bridges',horizontal_sigma=.09,dt_s=1)}
     if extended:
         configs.update({'gravity_ghosts2':replace(baseline,self_gravity=True,ghosts=2,orbits=.5),
                         'gravity_tighter':replace(baseline,self_gravity=True,opening_angle=.15,orbits=.5),
                         'gravity_half_step':replace(baseline,self_gravity=True,dt_s=1,orbits=.5),
                         'radius_4m_large':replace(baseline,radius_m=4,size_m=256),
                         'radius_1m_seed43':replace(baseline,radius_m=1,dt_s=1,seed=43),
-                        'radius_4m_seed43':replace(baseline,radius_m=4,seed=43)})
+                        'radius_4m_seed43':replace(baseline,radius_m=4,seed=43),
+                        'encounter_energy_half_step':replace(baseline,restitution='bridges',horizontal_sigma=.09,dt_s=.5)})
     if selected:
         unknown=set(selected)-set(configs)
         if unknown: raise ValueError(f"Unknown box cases: {sorted(unknown)}")
@@ -138,15 +140,16 @@ def main():
             p.error('Budget inputs must be finite and positive')
         budget(args)
         return
+    sha=subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True,check=True).stdout.strip()
+    dirty=subprocess.run(['git','status','--porcelain'],capture_output=True,text=True,check=True).stdout
+    source_hashes={str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted(Path('keeler').glob('*.py'))}
     args.out.mkdir(parents=True,exist_ok=True)
     start=time.monotonic()
     if args.command in ('encounters','all'): encounters(args.out)
     if args.command in ('boxes','all'): boxes(args.out,args.extended,args.case)
-    sha=subprocess.run(['git','rev-parse','HEAD'],capture_output=True,text=True,check=True).stdout.strip()
-    dirty=subprocess.run(['git','status','--porcelain'],capture_output=True,text=True,check=True).stdout
     write_json(args.out/'manifest.json',{
         'commit':sha,'working_tree_dirty':bool(dirty),'python':platform.python_version(),
-        'source_sha256':{str(f):hashlib.sha256(f.read_bytes()).hexdigest() for f in sorted(Path('keeler').glob('*.py'))},
+        'source_sha256':source_hashes,
         'platform':platform.platform(),'numpy':np.__version__,'seconds':time.monotonic()-start,
         'hill_radius_m':HILL,'omega_per_s':OMEGA,'period_s':PERIOD,
         'files':{f.name:hashlib.sha256(f.read_bytes()).hexdigest()
