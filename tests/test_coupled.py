@@ -147,3 +147,31 @@ def test_direct_packet_energy_is_conservative_without_contacts():
     q, moon = read_frame(sim, cfg, layout)
     after = energy(sim, cfg, q, moon)
     assert abs(after - before) < 1e-4
+
+
+def test_stream_selection_comes_from_gravity_and_starts_cold():
+    from keeler.coupled import plan_stream_meeting
+
+    centers, plan = plan_stream_meeting()
+    assert plan["point_track_residual_m"] < 0.01
+    assert plan["no_moon_point_track_separation_m"] > 1000
+    assert plan["predicted_relative_speed_m_s"] > 0.02
+    assert all(y > 100_000 for x, y in centers)
+    c = Packet(packet_centres_xy_m=centers)
+    q = initial_packet(c)["state"]
+    assert np.max(abs(q[:, 3])) < 0.01
+    assert np.max(abs(q[:, 4] + 1.5 * OMEGA * q[:, 0])) < 0.01
+
+
+def test_step_bound_includes_relative_motion_of_meeting_packets():
+    from keeler.coupled import packet_step_ratio
+
+    q = np.zeros((4, 6))
+    q[:, 1] = [0, 6, 0, 6]
+    q[2:, 0] = 5
+    q[:2, 3] = 1
+    q[2:, 3] = -1
+    tags = np.array([1, 1, -1, -1])
+    assert packet_step_ratio(q, tags, 1, 2) == pytest.approx(0.5)
+    q[2:, 0] = 40_000
+    assert packet_step_ratio(q, tags, 1, 2) == 0

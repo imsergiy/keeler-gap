@@ -294,10 +294,27 @@ def deep_overlap_fraction(q, radius):
 
 def packet_step_ratio(q, side, dt, radius):
     maximum = 0.0
+    groups = []
     for sign in [1, -1]:
-        velocities = q[side == sign, 3:]
+        group = q[side == sign]
+        groups.append(group)
+        velocities = group[:, 3:]
         residual = velocities - np.mean(velocities, axis=0)
         maximum = max(maximum, float(np.max(np.linalg.norm(residual, axis=1))))
+    centers = [g[:, :3].mean(axis=0) for g in groups]
+    extents = [
+        np.linalg.norm(g[:, :3] - center, axis=1).max()
+        for g, center in zip(groups, centers)
+    ]
+    relative_bulk = np.linalg.norm(
+        groups[0][:, 3:].mean(axis=0) - groups[1][:, 3:].mean(axis=0)
+    )
+    if (
+        np.linalg.norm(centers[0] - centers[1])
+        <= sum(extents) + 2 * radius + relative_bulk * dt
+    ):
+        residual = q[:, 3:] - q[:, 3:].mean(axis=0)
+        maximum = max(maximum, float(np.linalg.norm(residual, axis=1).max()))
     return maximum * dt / radius
 
 
@@ -712,6 +729,10 @@ def animate_pair(out, count, comparison="moon"):
             clock.set_text(
                 f"Time: {times[frame]:+.2f} orbits from {event_name} | Contacts: {int(curves[0][frame, 7])} / {int(curves[1][frame, 7])}"
             )
+            if comparison == "inclination":
+                clock.set_text(
+                    f"Time: {times[frame]:+.2f} orbits | Moon height: {a['moon'][frame, 2] / 1000:+.2f} km"
+                )
             writer.grab_frame()
             if frame == 120:
                 fig.savefig(
@@ -724,23 +745,22 @@ def animate_pair(out, count, comparison="moon"):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--out", type=Path, required=True)
-    parser.add_argument("--counts", nargs="+", type=int, default=[128, 288, 512])
-    parser.add_argument("--controls", action="store_true")
     parser.add_argument(
-        "--inclined",
-        action="store_true",
-        help="Also test a documented 8.6 km moon vertical amplitude at the smallest count",
+        "experiment",
+        nargs="?",
+        choices=["packets", "inclination", "streams"],
+        default="packets",
     )
+    parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--counts", type=int, nargs="+", default=[128])
+    parser.add_argument("--controls", action="store_true")
     args = parser.parse_args()
     if args.counts != sorted(set(args.counts)):
         parser.error("Counts must be increasing and distinct")
     for n in args.counts:
         Packet(count=n)
         if n < 128:
-            parser.error(
-                "The series tracks the same 128 core grains; use at least 128 total"
-            )
+            parser.error("Use at least 128 grains to retain the fixed core")
     if args.out.exists() and any(args.out.iterdir()):
         parser.error("Use a new output directory")
     args.out.mkdir(parents=True, exist_ok=True)
@@ -749,28 +769,75 @@ def main():
             ["git", "rev-parse", "HEAD"], text=True
         ).strip(),
         "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "experiment": args.experiment,
+        "counts": args.counts,
     }
+    centers = None
+    if args.experiment == "streams":
+        centers, plan = plan_stream_meeting()
+        (args.out / "stream_plan.json").write_text(json.dumps(plan, indent=2) + "\n")
     for n in args.counts:
         cfg = Packet(count=n)
-        save_case(args.out, f"full_{n}", cfg)
-        save_case(args.out, f"no_moon_{n}", replace(cfg, moon_gravity=False))
-        animate_pair(args.out, n)
-    if args.inclined:
-        tilted = Packet(count=args.counts[0], moon_vertical_amplitude_m=8600)
-        save_case(args.out, f"inclined_{tilted.count}", tilted)
-        save_case(
-            args.out,
-            f"inclined_half_step_{tilted.count}",
-            replace(tilted, dt_s=tilted.dt_s / 2),
-        )
-        animate_pair(args.out, tilted.count, comparison="inclination")
+        if args.experiment == "streams":
+            cfg = replace(
+                cfg,
+                packet_centres_xy_m=centers,
+                upstream_orbits=4,
+                downstream_orbits=2,
+                dt_s=0.5,
+            )
+            save_case(args.out, f"crossing_full_{n}", cfg)
+            save_case(
+                args.out, f"crossing_no_moon_{n}", replace(cfg, moon_gravity=False)
+            )
+            animate_pair(args.out, n, comparison="streams")
+        elif args.experiment == "inclination":
+            save_case(args.out, f"full_{n}", cfg)
+            save_case(
+                args.out, f"inclined_{n}", replace(cfg, moon_vertical_amplitude_m=8600)
+            )
+            animate_pair(args.out, n, comparison="inclination")
+        else:
+            save_case(args.out, f"full_{n}", cfg)
+            save_case(args.out, f"no_moon_{n}", replace(cfg, moon_gravity=False))
+            animate_pair(args.out, n)
     if args.controls:
         cfg = Packet(count=args.counts[0])
-        for name, c in [
-            ("half_step", replace(cfg, dt_s=cfg.dt_s / 2)),
-            ("no_grain_gravity", replace(cfg, self_gravity=False)),
-            ("force_only", replace(cfg, self_gravity=False, collisions=False)),
-        ]:
+        if args.experiment == "streams":
+            cfg = replace(
+                cfg,
+                packet_centres_xy_m=centers,
+                upstream_orbits=4,
+                downstream_orbits=2,
+                dt_s=0.5,
+            )
+            cases = [
+                ("crossing_half_step", replace(cfg, dt_s=0.25)),
+                ("crossing_no_grain_gravity", replace(cfg, self_gravity=False)),
+                (
+                    "crossing_force_only",
+                    replace(cfg, self_gravity=False, collisions=False),
+                ),
+                (f"crossing_seed{cfg.seed + 1}_full", replace(cfg, seed=cfg.seed + 1)),
+                (
+                    f"crossing_seed{cfg.seed + 1}_no_moon",
+                    replace(cfg, seed=cfg.seed + 1, moon_gravity=False),
+                ),
+            ]
+        elif args.experiment == "inclination":
+            cases = [
+                (
+                    "inclined_half_step",
+                    replace(cfg, moon_vertical_amplitude_m=8600, dt_s=1),
+                )
+            ]
+        else:
+            cases = [
+                ("half_step", replace(cfg, dt_s=1)),
+                ("no_grain_gravity", replace(cfg, self_gravity=False)),
+                ("force_only", replace(cfg, self_gravity=False, collisions=False)),
+            ]
+        for name, c in cases:
             save_case(args.out, f"{name}_{cfg.count}", c)
     (args.out / "manifest.json").write_text(json.dumps(identity, indent=2) + "\n")
 

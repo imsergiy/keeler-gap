@@ -2,7 +2,7 @@
 
 This repository contains a reproducible numerical study of the three questions in the [problem](https://docs.google.com/document/d/1-J-R5lnwra715mJMhCLv970_IrBIYlH6mMRxi7IM-D4/mobilebasic). It tests orbital scattering, vertical energy transfer by grain collisions, and the limits of a brightness interpretation.
 
-**This is not a validated reproduction of the Cassini images.** The orbital calculation and grain calculation are separate controls. No output here establishes the real edge's damping time or its calibrated brightness. Read [the report](REPORT.md) before interpreting a plot.
+**This is not a validated reproduction of the Cassini images.** The original orbital and grain calculations are separate controls. The new finite-packet engine couples moon forcing, grain gravity, and physical 3D contacts directly. No output here establishes the real edge's damping time or its calibrated brightness. Read [the report](REPORT.md) before interpreting a plot.
 
 ![Orbital encounters](results/encounters.png)
 
@@ -41,6 +41,26 @@ uv run python -m keeler budget --width-km 10 --length-km 1000 --tau .5 --radius-
 ```
 
 This estimates the cost of a resolved domain. The current code does **not** implement that complete gap-edge domain.
+
+## Coupled physical movements
+
+The new engine uses real 2 m grains, direct pairwise gravity, and physical contacts in one integration. It supplies no target wave or hot grain kick. The small packets test mechanisms; they do not represent the full edge or its ambient ring. The focused stream case deliberately follows two incoming regions selected from gravity-predicted crossing orbits. See the [results and limits](REPORT.md#update-coupled-physical-movements).
+
+Start small:
+
+```sh
+uv run python -m keeler.coupled packets --out runs/first-packets
+```
+
+Reproduce the domain-size series and the two focused controls:
+
+```sh
+uv run python -m keeler.coupled packets --counts 128 288 512 --controls --out runs/physical-packets
+uv run python -m keeler.coupled inclination --counts 128 --controls --out runs/physical-tilt
+uv run python -m keeler.coupled streams --counts 128 288 --controls --out runs/physical-streams
+```
+
+Each family writes GIFs as pairs finish. Use a fresh output directory. Full count and control series can take tens of minutes on the small container; measured case timings are in the data. Count increases physical area at fixed grain properties, while time-step controls test numerical resolution. The same central grains retain their IDs and initial states. No lighting or shadows are computed.
 
 ## Watch the horizontal-wave refinement
 

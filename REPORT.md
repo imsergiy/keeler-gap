@@ -1,12 +1,75 @@
 # Keeler gap study
 
-The calculations support orbital scattering and collision-driven vertical heating. They do **not** establish a complete, physically resolved match to the three requested observations. The public code, numerical outputs, and checks make that limit testable. There is no artificial drag term or enlarged numerical grain used to obtain a desired picture.
+The study now includes a coupled three-dimensional finite-packet calculation: moon forcing, grain gravity, and physical contacts act in the same integration. It produces orbital changes, coherent vertical bending, and collision-driven splashes in controlled small experiments. It does **not** yet establish a complete, resolved Keeler-gap edge or the observed settling rate. The new experiments omit lighting; no target wave, hot grain kick, or artificial settling force is supplied.
 
 | Question | Result from this study | What remains unverified |
 | --- | --- | --- |
 | Why does material pull away from Daphnis? | A restricted encounter changes guiding centers. Close encounters can produce kilometer-scale changes. Radial oscillation amplitude is measured separately. | A resolved collisional edge and its semimajor-axis distribution several orbits downstream. |
 | Why are the waves brighter? | A slab calculation shows why mass density alone does not determine brightness. Breaking opaque clumps can expose more scattering area. | The actual particle arrangement, phase function, mutual shadows, and camera geometry of both images. |
 | Why does material rise and then settle? | Three-dimensional hard-sphere controls transfer horizontal energy into vertical motion. Inelastic runs can then lose vertical energy; the collisionless control cannot. | The observed 0.5–1.5 km structures, their downstream location, and their damping rate in a self-consistent edge calculation. |
+
+## Update: coupled physical movements
+
+The new calculation follows real, equal-size grains rather than massless orbit markers. Each has a 2 m radius and mass set by a 450 kg/m³ material density. Upstream surface density is 300 kg/m². Saturn supplies the spherical-planet Hill tide; the moon and grains exert direct pairwise Newton gravity. A velocity-dependent hard-sphere ice law sets contact impulses and mechanical energy loss. The moon can react to the packets. Grains on both sides are calculated, not mirrored.
+
+The initial ring thickness is 5 m. It sets cold initial random speeds near 0.00061 m/s. The large orbital response and any later fast impacts must be produced by gravity. No large grain velocity dispersion is supplied. The model has no friction, spin, fragmentation, ambient ring reservoir, or physical enclosing wall. Moon impacts are excluded rather than modeled as grain rebounds.
+
+Increasing count at fixed radius, mass, and surface density increases the physical region. This is a **domain-size check**, not the earlier tracer-sampling refinement. Equal-area jittered cells give nested initial states, and stable IDs follow the same 128 core grains even when the contact tree reorders its arrays.
+
+### Small near-edge packets
+
+Two initially cold patches are centered about 21.25 km from the moon's orbit, one on each side. They approach for roughly two orbital periods and are followed for three more. Each blue run has a matched orange run with the moon removed; the initial grains, grain gravity, and contacts are otherwise unchanged.
+
+| Total grains | Width of each packet (m) | Final packet-A orbit shift with moon (m) | Final core height with moon / without (m) |
+| ---: | ---: | ---: | ---: |
+| [128](results/coupled/coupled_128.gif) | 56.7 | 129.6 | 3.94 / 4.12 |
+| [288](results/coupled/coupled_288.gif) | 85.1 | 130.8 | 4.06 / 4.02 |
+| [512](results/coupled/coupled_512.gif) | 113.4 | 127.6 | 4.06 / 4.08 |
+
+The orbital disturbance is clear, while both runs remain only a few meters thick. These tiny neighboring regions move almost coherently and do not contain the widely separated incoming streams that meet at a wave front. Adding neighbors alone does not guarantee a large splash.
+
+![Coupled packet comparisons](results/coupled/packet_comparison.png)
+
+### Focused, gravity-selected stream collision
+
+To test the collision mechanism with few real grains, I selected two small incoming regions whose gravity-calculated orbits meet downstream. This is a deliberately focused event, not an unbiased simulation of the whole ring. The choice of regions is supplied; their subsequent motion, impact speeds, impulses, and upward spread are calculated.
+
+The point-orbit calculation starts the two centers on cold circular orbits at radial offsets 21 and 23 km. It solves for upstream along-orbit positions about 287.7 and 365.4 km. Under the moon's gravity they meet near 495.7 km downstream at the chosen reference time of four periods, with a predicted relative speed of 0.202 m/s. Without the moon they miss by about 3.10 km. [The plan](results/coupled/stream_plan.json) records the calculation. The physical-grain runs start upstream, with gravity and contacts active throughout; no post-encounter velocity is inserted.
+
+![Gravity-driven collision of selected streams](results/coupled/crossing_128.gif)
+
+| Case | Peak tracked-core RMS height (m) | Peak core 99th-percentile altitude (m) | Highest grain anywhere (m) |
+| --- | ---: | ---: | ---: |
+| 128 grains, Moon on | 91.5 | 387.7 | 393.8 |
+| 128 grains, Moon off | 4.9 | 13.1 | 18.2 |
+| 128 grains, half step | 83.7 | 397.4 | 425.4 |
+| 128 grains, second seed | 79.9 | 393.2 | 445.2 |
+| 288 grains, same core | 51.1 | 199.1 | 479.0 |
+| 128 grains, force-only control | 5.1 | 13.5 | 17.2 |
+
+In the 128-grain full run, normal contact speeds reach 0.190 m/s, compared with about 0.0034 m/s without the moon. The full run dissipates about 563 J in contacts, and its corrected rotating-energy budget deviates by less than 0.0001 J. The force-only control has no contacts and stays thin even though its orbits cross. A no-grain-gravity control with contacts still splashes. Together these tests support conversion of moon-generated relative orbital motion into vertical motion through contacts.
+
+The height statistics are **not converged**. Halving the step changes peak core RMS height by about 9% and late vertical oscillator energy by about 20%. Adding neighbors changes which core grains receive impacts. A second seed also changes the distribution. Similar maximum altitudes do not establish a stable height distribution, optical wall, or real settling rate.
+
+After the impact, height oscillates as raised grains return through the plane. Vertical oscillator energy remains elevated. These open finite packets lack continuing contact with the surrounding cold ring, so a low height at a later instant is **not completed settling**. No damping force is added to make it settle.
+
+![Stream collision controls and energy](results/coupled/stream_comparison.png)
+
+### Inclined moon: lift versus thickness
+
+A separate 128-grain run gives the moon an adopted 8.6 km vertical orbital amplitude, consistent with the orbital scale discussed by [Torii et al. (2025)](https://arxiv.org/abs/2504.10989). The initial phase is zero by choice, not a fit to either image. Only the moon's initial vertical position and velocity change; the solver then evolves it. The grains start in the same cold state as the coplanar control.
+
+![Inclined moon control](results/coupled/inclination_128.gif)
+
+The outer packet's mean height reaches about 125 m while its internal thickness stays a few meters. This is coherent bending, not a hot splash. Halving the step changes the measured mean-height peak by about 0.00004 m. The inclined moon's own oscillator energy dominates the global energy sum, so its absolute floating-point energy error cannot certify grain-scale cooling; trajectory and step comparisons are also required.
+
+### Checks and remaining scope
+
+Direct pair forces are used for these low counts. The spatial tree is only an exact contact search. Tests check force agreement, contact detection in a moving packet, particle identity tracking, physical density and nested initial states, contact momentum and energy loss, three-dimensional motion against an independent solver, and the rotating-frame conservative energy. All 37 current tests pass. Saved colliding snapshots have no deep overlaps. The sampled step bound includes closing motion between packets when their bounding regions can meet; it is not a proof of every impact's accuracy.
+
+The first prototype had an initialization-order error that left its tree empty. It was rejected by the overlap guard and is not a result. Corrected preliminary force-tree trials were replaced by direct force evaluation, which is faster and more accurate for these small cases. The published data retain the actual configurations and source notes. None of these small-region tests is yet the complete ring-edge solver needed for a quantitative Cassini comparison. Lighting remains outside this new work.
+
+[Case summaries](results/coupled/summary.csv), [study definitions](results/coupled/study.json), and the raw state archive attached to the task support inspection. Commands for each family are in the README.
 
 ## Update: particle-count refinement with GIFs
 
@@ -148,6 +211,6 @@ The container has a 2 GiB memory limit and four available CPUs. No host or GPU c
 
 For scale, a single 10 km by 1,000 km strip at optical depth 0.5 and 1 m grain radius needs about **1.59 billion grains**. REBOUND's 128-byte particle structure alone would require about **190 GiB**, before trees, collision lists, neighboring mass, or output. This is an estimate for that explicit domain, not a proof that every possible numerical method needs that much memory. A reduced kinetic or scaled method would need its own validation before it could answer the physical-size questions.
 
-A full follow-on calculation must couple the moon encounter to a resolved collisional edge, supply unperturbed upstream material, check radial and azimuthal domain convergence, follow angular-momentum and energy budgets, and compare synthetic images at the actual observing geometry. A sufficiently large machine is not the only missing item: this repository's homogeneous box is not that complete domain solver. No command here is represented as a hidden route to a full Cassini fit.
+A full follow-on calculation must couple the moon encounter to a resolved collisional edge, supply unperturbed upstream material, check radial and azimuthal domain convergence, follow angular-momentum and energy budgets, and compare synthetic images at the actual observing geometry. The new finite-packet engine couples the physical movements, but it is still not the continuous, resolved ring-edge domain required for that observational test. No command here is represented as a hidden route to a full Cassini fit.
 
 Use the commands in [README.md](README.md) to reproduce the controls and regenerate the raw trajectories and grain snapshots. The results identify mechanisms and reject misleading shortcuts. The complete three-feature observational validation remains open.
