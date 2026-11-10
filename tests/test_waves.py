@@ -1,6 +1,6 @@
 import numpy as np
 
-from keeler.encounter import Encounter, HILL, integrate
+from keeler.encounter import Encounter, integrate
 from keeler.waves import (
     BMAX,
     BMIN,

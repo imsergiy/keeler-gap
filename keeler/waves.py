@@ -16,7 +16,7 @@ from matplotlib.animation import PillowWriter
 import numpy as np
 from scipy.stats import qmc
 
-from .encounter import Encounter, HILL, PERIOD, elements, integrate
+from .encounter import Encounter, HILL, PERIOD, elements, integrate, jacobi
 
 BMIN = 21_000.0
 BMAX = 31_000.0
@@ -47,24 +47,20 @@ def interpolate_positions(t, q, ages):
 def new_tracks(impact, initial_age, config, batch_size=128):
     positions = np.empty((len(MOVIE_ORBITS), len(impact), 2))
     shifts = np.empty(len(impact))
-    amplitudes = np.empty(len(impact))
     max_jacobi_drift = 0.0
-    from .encounter import jacobi
-
     for start in range(0, len(impact), batch_size):
         stop = min(start + batch_size, len(impact))
         t, q = integrate(impact[start:stop], config)
         ages = 2 * np.pi * MOVIE_ORBITS[:, None] + initial_age[None, start:stop]
         positions[:, start:stop] = interpolate_positions(t, q, ages)
-        guiding, radial, _ = elements(q)
+        guiding = elements(q[[0, -1]])[0]
         shifts[start:stop] = (guiding[-1] - guiding[0]) * HILL
-        amplitudes[start:stop] = radial[-1] * HILL
         invariant = jacobi(q)
         max_jacobi_drift = max(
             max_jacobi_drift, float(np.max(abs(invariant - invariant[0])))
         )
         print(f"  integrated {stop}/{len(impact)} new outer-side tracks", flush=True)
-    return positions, shifts, amplitudes, max_jacobi_drift
+    return positions, shifts, max_jacobi_drift
 
 
 def profile(positive_positions):
@@ -83,7 +79,7 @@ def animate(path, positive, impact, initial_age, count):
     fig, axes = plt.subplots(2, 1, figsize=(10, 6.8), sharex=True, sharey=True)
     fig.subplots_adjust(top=0.88, bottom=0.14, left=0.09, right=0.98, hspace=0.23)
     fig.patch.set_facecolor("#071726")
-    heading = fig.text(
+    fig.text(
         0.5,
         0.96,
         f"{count:,} independent orbit markers",
@@ -201,10 +197,18 @@ def main():
     sample_b, sample_age = packet_sample(args.counts[-1] // 2)
     all_positions = np.empty((len(MOVIE_ORBITS), 0, 2))
     all_shifts = np.empty(0)
-    all_amplitudes = np.empty(0)
     summaries = []
     previous_profile = None
     previous_mean = None
+    source_identity = {
+        "commit": subprocess.check_output(
+            ["git", "rev-parse", "HEAD"], text=True
+        ).strip(),
+        "working_tree_dirty": bool(
+            subprocess.check_output(["git", "status", "--porcelain"], text=True)
+        ),
+        "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+    }
     started = time.monotonic()
     for count in args.counts:
         stage = time.monotonic()
@@ -214,12 +218,11 @@ def main():
             f"RUN {count} markers; adding {new - old} outer tracks and their reflected inner tracks",
             flush=True,
         )
-        positions, shifts, amplitudes, drift = new_tracks(
+        positions, shifts, drift = new_tracks(
             sample_b[old:new], sample_age[old:new], config
         )
         all_positions = np.concatenate((all_positions, positions), axis=1)
         all_shifts = np.concatenate((all_shifts, shifts))
-        all_amplitudes = np.concatenate((all_amplitudes, amplitudes))
         cells, edge = profile(all_positions[PROFILE_FRAME])
         valid = np.isfinite(edge)
         change = None
@@ -235,6 +238,8 @@ def main():
             "markers": count,
             "independent_outer_tracks": new,
             "mean_outward_guiding_shift_m": mean,
+            "shift_epoch": "Six orbits after each track nominal conjunction, not one common movie time",
+            "profile_movie_orbits": 4,
             "mean_shift_change_percent": None
             if previous_mean is None
             else float(100 * abs(mean / previous_mean - 1)),
@@ -295,10 +300,7 @@ def main():
     fig.savefig(args.out / "profiles.png", dpi=160)
     plt.close(fig)
     manifest = {
-        "commit": subprocess.check_output(
-            ["git", "rev-parse", "HEAD"], text=True
-        ).strip(),
-        "source_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        **source_identity,
         "elapsed_seconds": time.monotonic() - started,
         "interpolation_check": interpolation,
         "initial_gap_width_m": 2 * BMIN,
