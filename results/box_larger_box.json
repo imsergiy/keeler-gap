@@ -1,0 +1,35 @@
+{
+  "config": {
+    "radius_m": 2.0,
+    "size_m": 256,
+    "surface_density": 300.0,
+    "material_density": 450.0,
+    "horizontal_sigma": 0.02,
+    "height_m": 5.0,
+    "orbits": 3.0,
+    "dt_s": 2.0,
+    "restitution": 0.5,
+    "collisions": true,
+    "self_gravity": false,
+    "seed": 42,
+    "opening_angle": 0.3,
+    "ghosts": 1
+  },
+  "particles": 1304,
+  "tau": 0.2500388684253595,
+  "sigma_actual": 300.04664211043143,
+  "seconds": 1164.1669069490163,
+  "max_speed_dt_over_radius": 0.08810607392722175,
+  "rebound_version": "4.4.10",
+  "columns": [
+    "orbits",
+    "height_rms_m",
+    "height_abs_p99_m",
+    "vx_std_m_s",
+    "vy_peculiar_std_m_s",
+    "vz_std_m_s",
+    "vertical_energy_J_kg",
+    "max_peculiar_speed_m_s"
+  ],
+  "meaning": "Homogeneous excited patch; no Daphnis, radial edge, or photometric fit"
+}

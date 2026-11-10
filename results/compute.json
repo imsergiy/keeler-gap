@@ -1,0 +1,7 @@
+{
+  "architecture": "aarch64",
+  "available_cpus": 4,
+  "memory_limit_bytes": 2147483648,
+  "cpu_max": "max 100000",
+  "note": "Container limits, not a measurement of peak memory of one simulation"
+}

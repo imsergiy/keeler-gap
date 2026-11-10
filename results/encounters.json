@@ -1,0 +1,90 @@
+{
+  "circular": {
+    "config": {
+      "mass_factor": 1.0,
+      "radial_epicycle_m": 0.0,
+      "vertical_amplitude_m": 0.0,
+      "phase": 0.0,
+      "start": -120.0,
+      "end": 37.69911184307752,
+      "samples": 1601,
+      "rtol": 2e-10
+    },
+    "impact_m": 20000.0,
+    "guiding_shift_m": 147.71668262143757,
+    "radial_epicycle_m": 2205.901044007453,
+    "vertical_amplitude_m": 0.0,
+    "fold_present": true,
+    "max_jacobi_absolute_drift": 1.7554487641291416e-08
+  },
+  "inclined": {
+    "config": {
+      "mass_factor": 1.0,
+      "radial_epicycle_m": 0.0,
+      "vertical_amplitude_m": 8600,
+      "phase": 0.0,
+      "start": -120.0,
+      "end": 37.69911184307752,
+      "samples": 1601,
+      "rtol": 2e-10
+    },
+    "impact_m": 20000.0,
+    "guiding_shift_m": 104.67125641059438,
+    "radial_epicycle_m": 2101.6463154845683,
+    "vertical_amplitude_m": 168.22370555681175,
+    "fold_present": null
+  },
+  "eccentric_inclined": {
+    "config": {
+      "mass_factor": 1.0,
+      "radial_epicycle_m": 4500,
+      "vertical_amplitude_m": 8600,
+      "phase": 0.0,
+      "start": -120.0,
+      "end": 37.69911184307752,
+      "samples": 1601,
+      "rtol": 2e-10
+    },
+    "impact_m": 20000.0,
+    "guiding_shift_m": 94.41291823102469,
+    "radial_epicycle_m": 1377.5427941725363,
+    "vertical_amplitude_m": 92.26586721985943,
+    "fold_present": null
+  },
+  "half_mass": {
+    "config": {
+      "mass_factor": 0.5,
+      "radial_epicycle_m": 0.0,
+      "vertical_amplitude_m": 0.0,
+      "phase": 0.0,
+      "start": -120.0,
+      "end": 37.69911184307752,
+      "samples": 1601,
+      "rtol": 2e-10
+    },
+    "impact_m": 20000.0,
+    "guiding_shift_m": 28.16463901325388,
+    "radial_epicycle_m": 1027.2278957042038,
+    "vertical_amplitude_m": 0.0,
+    "fold_present": true,
+    "max_jacobi_absolute_drift": 2.3392772163788322e-09
+  },
+  "no_moon": {
+    "config": {
+      "mass_factor": 0,
+      "radial_epicycle_m": 0.0,
+      "vertical_amplitude_m": 0.0,
+      "phase": 0.0,
+      "start": -120.0,
+      "end": 37.69911184307752,
+      "samples": 1601,
+      "rtol": 2e-10
+    },
+    "impact_m": 20000.0,
+    "guiding_shift_m": 0.0,
+    "radial_epicycle_m": 0.0,
+    "vertical_amplitude_m": 0.0,
+    "fold_present": false,
+    "max_jacobi_absolute_drift": 0.0
+  }
+}
