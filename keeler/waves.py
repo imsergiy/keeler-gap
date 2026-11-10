@@ -45,6 +45,10 @@ def interpolate_positions(t, q, ages):
 
 
 def new_tracks(impact, initial_age, config, batch_size=128):
+    if config.radial_epicycle_m or config.vertical_amplitude_m:
+        raise ValueError(
+            "Shifted and reflected tracks require a stationary force field in the rotating frame (circular, coplanar moon)"
+        )
     positions = np.empty((len(MOVIE_ORBITS), len(impact), 2))
     shifts = np.empty(len(impact))
     max_jacobi_drift = 0.0
@@ -55,7 +59,7 @@ def new_tracks(impact, initial_age, config, batch_size=128):
         positions[:, start:stop] = interpolate_positions(t, q, ages)
         guiding = elements(q[[0, -1]])[0]
         shifts[start:stop] = (guiding[-1] - guiding[0]) * HILL
-        invariant = jacobi(q)
+        invariant = jacobi(q, config.mass_factor)
         max_jacobi_drift = max(
             max_jacobi_drift, float(np.max(abs(invariant - invariant[0])))
         )

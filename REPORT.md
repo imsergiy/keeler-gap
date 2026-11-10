@@ -36,7 +36,7 @@ The profile is measured at movie time four orbits. It uses the lower tenth perce
 
 ![Marker-count comparison](results/waves/profiles.png)
 
-Replaying the shared 16,000-marker set with different integration batches changed positions by at most 0.00001 m. Doubling the movie interpolation samples changed three test tracks by less than 2 m. These checks keep the measured sampling differences separate from integration and display interpolation errors. All 24 physics and sampling tests pass.
+Replaying the shared 16,000-marker set with different integration batches changed positions by at most 0.00001 m. Doubling the movie interpolation samples changed three test tracks by less than 2 m. These checks keep the measured sampling differences separate from integration and display interpolation errors. All 28 physics and sampling tests pass.
 
 This series establishes convergence of selected statistics within a gravity-only model. It does not establish the real ring's damping, brightness, or vertical splashes. The markers can cross without colliding, and increasing their count does not repair that omitted physics. [Full numerical results](results/waves/resolution.json), [study definitions](results/waves/study.json), and [original run records](results/waves/run_records.json) preserve the measurements and their limits.
 

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 from keeler.encounter import Encounter, integrate
 from keeler.waves import (
@@ -10,6 +11,7 @@ from keeler.waves import (
     packet_sample,
     profile,
     profile_difference,
+    new_tracks,
 )
 
 
@@ -63,3 +65,21 @@ def test_profile_comparison_requires_every_measurement_bin():
     b = np.array([0.0, 0.0])
     assert profile_difference(a, b) == np.sqrt(2)
     assert profile_difference(np.array([0.0, np.nan]), b) is None
+
+
+@pytest.mark.parametrize(
+    "config", [Encounter(radial_epicycle_m=4500), Encounter(vertical_amplitude_m=8600)]
+)
+def test_packet_reuse_rejects_a_time_dependent_moon(config):
+    with pytest.raises(ValueError, match="stationary"):
+        new_tracks(np.array([BMIN]), np.array([-10.0]), config)
+
+
+@pytest.mark.parametrize("mass_factor", [0.0, 0.5])
+def test_track_invariant_uses_the_configured_moon_mass(mass_factor):
+    _, _, drift = new_tracks(
+        np.array([BMIN]),
+        np.array([-10.0]),
+        Encounter(mass_factor=mass_factor, samples=201),
+    )
+    assert drift < 1e-7
