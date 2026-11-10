@@ -17,7 +17,7 @@ from .grains import coefficient, state
 
 MAX_SIDE = 64
 CORE_SIDE = 8
-ROOT_M = 2_000_000.0
+ROOT_M = 4_000_000.0
 MOON_RADIUS_M = 3900.0
 
 
@@ -28,11 +28,14 @@ class Packet:
     material_density: float = 450.0
     surface_density: float = 300.0
     center_m: float = 21_250.0
+    packet_centres_xy_m: tuple | None = None
     height_m: float = 5.0
     upstream_orbits: float = 2.0
     downstream_orbits: float = 3.0
     dt_s: float = 2.0
     seed: int = 42
+    moon_vertical_amplitude_m: float = 0.0
+    moon_vertical_phase_rad: float = 0.0
     moon_gravity: bool = True
     self_gravity: bool = True
     collisions: bool = True
@@ -62,7 +65,14 @@ class Packet:
             raise ValueError(
                 "These initial cells require center spacing greater than a grain diameter"
             )
-        if self.center_m - self.side_length_m / 2 <= 2 * np.sqrt(3) * HILL:
+        centers = (
+            np.array([[self.center_m, 0], [-self.center_m, 0]])
+            if self.packet_centres_xy_m is None
+            else np.asarray(self.packet_centres_xy_m, dtype=float)
+        )
+        if centers.shape != (2, 2) or not np.isfinite(centers).all():
+            raise ValueError("Exactly two finite packet centres are required")
+        if np.min(abs(centers[:, 0])) - self.side_length_m / 2 <= 2 * np.sqrt(3) * HILL:
             raise ValueError(
                 "This packet experiment starts outside the close Hill-encounter region"
             )
@@ -70,6 +80,17 @@ class Packet:
             isinstance(self.restitution, (float, int)) and 0 <= self.restitution <= 1
         ):
             raise ValueError("Restitution must be bridges or a number in [0,1]")
+        if (
+            not np.isfinite(
+                [self.moon_vertical_amplitude_m, self.moon_vertical_phase_rad]
+            ).all()
+            or self.moon_vertical_amplitude_m < 0
+        ):
+            raise ValueError("Moon vertical amplitude must be finite and nonnegative")
+        if self.moon_vertical_amplitude_m and not self.self_gravity:
+            raise ValueError(
+                "This inclined-moon experiment requires all grain gravity active"
+            )
         if not isinstance(self.seed, int) or self.seed < 0:
             raise ValueError("Seed must be a nonnegative integer")
 
@@ -94,6 +115,17 @@ def initial_packet(config):
     core = []
     jitter = 0.4 * (config.cell_m - 2 * config.radius_m)
     cold_speed = OMEGA * config.height_m
+    centers = (
+        [
+            (
+                sign * config.center_m,
+                sign * 1.5 * OMEGA * config.center_m * config.upstream_orbits * PERIOD,
+            )
+            for sign in [1, -1]
+        ]
+        if config.packet_centres_xy_m is None
+        else config.packet_centres_xy_m
+    )
     for side_index, sign in enumerate([1, -1]):
         for i in range(-side // 2, side // 2):
             for j in range(-side // 2, side // 2):
@@ -103,17 +135,12 @@ def initial_packet(config):
                     )
                 )
                 x = (
-                    sign * config.center_m
+                    centers[side_index][0]
                     + (i + 0.5) * config.cell_m
                     + rng.uniform(-jitter, jitter)
                 )
                 y = (
-                    sign
-                    * 1.5
-                    * OMEGA
-                    * config.center_m
-                    * config.upstream_orbits
-                    * PERIOD
+                    centers[side_index][1]
                     + (j + 0.5) * config.cell_m
                     + rng.uniform(-jitter, jitter)
                 )
@@ -149,12 +176,19 @@ def initial_packet(config):
 
 
 def install_collision_law(sim, config):
-    contacts = {"approaching_calls": 0, "dissipated_J": 0.0}
+    contacts = {
+        "approaching_calls": 0,
+        "dissipated_J": 0.0,
+        "max_normal_speed_m_s": 0.0,
+    }
 
     def restitution(pointer, speed):
         e = coefficient(config.restitution, speed)
         if speed < -1e-14:
             contacts["approaching_calls"] += 1
+            contacts["max_normal_speed_m_s"] = max(
+                contacts["max_normal_speed_m_s"], abs(speed)
+            )
             contacts["dissipated_J"] += (
                 config.grain_mass * 0.25 * (1 - e * e) * speed * speed
             )
@@ -188,7 +222,15 @@ def setup(config):
     # Contact-tree modes must be enabled before adding bodies to populate the index.
     sim.collision = "tree" if config.collisions else "none"
     if config.moon_gravity:
-        sim.add(m=MOON_MASS, r=0, hash=0)
+        sim.add(
+            m=MOON_MASS,
+            r=0,
+            hash=0,
+            z=config.moon_vertical_amplitude_m * np.sin(config.moon_vertical_phase_rad),
+            vz=OMEGA
+            * config.moon_vertical_amplitude_m
+            * np.cos(config.moon_vertical_phase_rad),
+        )
     for identity, row in zip(layout["ids"], layout["state"]):
         x, y, z, vx, vy, vz = row
         sim.add(
@@ -261,8 +303,8 @@ def packet_step_ratio(q, side, dt, radius):
 
 COLUMNS = [
     "orbits",
-    "core_outer_guiding_shift_m",
-    "core_inner_guiding_shift_m",
+    "core_packet_a_guiding_shift_m",
+    "core_packet_b_guiding_shift_m",
     "core_height_rms_m",
     "core_abs_height_p99_m",
     "core_mean_z_m",
@@ -376,9 +418,15 @@ def run(config, samples=201):
         "columns": COLUMNS,
         "elapsed_seconds": time.monotonic() - started,
         "rebound_version": rebound.__version__,
+        "gravity_solver": sim.gravity,
+        "contact_max_normal_speed_m_s": contacts["max_normal_speed_m_s"],
+        "contact_tree_extent_m": ROOT_M,
         "model": "Finite open packets; Hill planetary tide; massive moon and grains; physical hard spheres; no target waves or heating kicks",
         "max_sampled_step_ratio": float(rows[:, -1].max()),
         "max_sampled_deep_overlap_fraction": float(rows[:, -2].max()),
+        "energy_diagnostic_note": "For a vertically moving moon, total energy is dominated by the moon oscillator; its roundoff limits grain-scale budget interpretation. Use trajectory and step checks as well."
+        if config.moon_vertical_amplitude_m
+        else "Rotating energy includes moon and grain potentials; collision loss is added back.",
         "max_corrected_energy_error_J": float(abs(rows[:, 10]).max()),
     }
     return rows, np.asarray(snapshots), np.asarray(moons), layout, meta
@@ -409,7 +457,60 @@ def save_case(out, name, config):
     return rows, q, moon, layout, meta
 
 
-def animate_pair(out, count):
+def plan_stream_meeting():
+    from scipy.integrate import solve_ivp
+    from scipy.optimize import root
+    from .encounter import Encounter, rhs
+
+    impact = np.array([21_000.0, 23_000.0])
+    event_orbits = 4.0
+    end = event_orbits * 2 * np.pi
+
+    def final(y):
+        q = np.zeros((6, 2))
+        q[0] = impact / HILL
+        q[1] = y / HILL
+        q[4] = -1.5 * q[0]
+        solution = solve_ivp(
+            rhs,
+            [0, end],
+            q.ravel(),
+            args=(Encounter(),),
+            method="DOP853",
+            rtol=2e-10,
+            atol=2e-12,
+        )
+        if not solution.success:
+            raise RuntimeError(solution.message)
+        units = np.array([HILL, HILL, HILL, OMEGA * HILL, OMEGA * HILL, OMEGA * HILL])
+        return solution.y[:, -1].reshape(6, 2) * units[:, None]
+
+    def difference(y):
+        q = final(y)
+        return q[:2, 0] - q[:2, 1]
+
+    guess = 1.5 * impact * end - 450_000.0
+    solution = root(difference, guess, tol=1e-8)
+    residual = float(np.linalg.norm(difference(solution.x)))
+    if not solution.success or residual > 0.01 or np.any(solution.x < 100_000):
+        raise RuntimeError("No valid upstream stream meeting found")
+    q = final(solution.x)
+    free = np.column_stack((impact, solution.x - 1.5 * impact * end))
+    centers = tuple((float(x), float(y)) for x, y in zip(impact, solution.x))
+    return centers, {
+        "initial_centres_xy_m": centers,
+        "predicted_meeting_orbits": event_orbits,
+        "predicted_meeting_xy_m": q[:2].mean(axis=1).tolist(),
+        "point_track_residual_m": residual,
+        "predicted_relative_speed_m_s": float(np.linalg.norm(q[3:, 0] - q[3:, 1])),
+        "no_moon_point_track_separation_m": float(np.linalg.norm(free[0] - free[1])),
+        "selection": "Two initially circular upstream regions in the same outer strip, selected from gravity-predicted crossing orbits. No post-encounter velocity is supplied.",
+    }
+
+
+def animate_pair(out, count, comparison="moon"):
+    if comparison not in {"moon", "inclination", "streams"}:
+        raise ValueError("Comparison must be moon, inclination, or streams")
     import matplotlib
 
     matplotlib.use("Agg")
@@ -418,7 +519,16 @@ def animate_pair(out, count):
 
     datasets = []
     metadata = []
-    for name in [f"full_{count}", f"no_moon_{count}"]:
+    names = (
+        [f"full_{count}", f"no_moon_{count}"]
+        if comparison == "moon"
+        else (
+            [f"inclined_{count}", f"full_{count}"]
+            if comparison == "inclination"
+            else [f"crossing_full_{count}", f"crossing_no_moon_{count}"]
+        )
+    )
+    for name in names:
         datasets.append(np.load(out / f"{name}.npz"))
         metadata.append(json.loads((out / f"{name}.json").read_text()))
     a, b = datasets
@@ -427,14 +537,17 @@ def animate_pair(out, count):
     ):
         raise RuntimeError("The paired runs must start with identical real grains")
     curves = [
-        np.loadtxt(out / f"{name}_{count}.csv", delimiter=",", skiprows=1)
-        for name in ["full", "no_moon"]
+        np.loadtxt(out / f"{name}.csv", delimiter=",", skiprows=1) for name in names
     ]
     core = a["core"]
     side = a["side"]
     outer = core & (side == 1)
     colors = ["#60d2ff", "#ffaf65"]
-    labels = ["Moon gravity on", "Moon gravity off"]
+    labels = (
+        ["Moon gravity on", "Moon gravity off"]
+        if comparison != "inclination"
+        else ["Tilted moon", "Coplanar moon"]
+    )
     positions = []
     centers = []
     for data in datasets:
@@ -479,8 +592,11 @@ def animate_pair(out, count):
     )
     clock = fig.text(0.5, 0.92, "", ha="center", color="white", fontsize=10)
     overview, local, orbit, height = axes.flat
+    overview_span = max(
+        800, 100 * np.ceil(max(abs(c[:, :, 1]).max() for c in centers) / 1000 / 100)
+    )
     overview.set(
-        xlim=(-800, 800),
+        xlim=(-overview_span, overview_span),
         ylim=(-28, 28),
         xlabel="Along orbit (km)",
         ylabel="Radial offset (km)",
@@ -504,22 +620,37 @@ def animate_pair(out, count):
         ylabel="Height above ring plane (m)",
     )
     local.set_title(
-        f"Side view: same {outer.sum()} outer core grains", color="white", fontsize=10
+        f"Side view: same {outer.sum()} packet-A core grains",
+        color="white",
+        fontsize=10,
     )
     local.axhline(0, color="#8398a6", linewidth=0.5)
     times = curves[0][:, 0] - metadata[0]["config"]["upstream_orbits"]
     for ax in [orbit, height]:
         ax.set_xlim(times[0], times[-1])
-        ax.set_xlabel("Orbits from nominal moon encounter")
+        ax.set_xlabel("Orbits relative to the reference event")
         ax.axvline(0, color="#a7b6c1", linestyle=":", linewidth=0.8)
-    guiding = [0.5 * (c[:, 1] - c[:, 2]) for c in curves]
+    signs = [np.sign(a["initial_state"][side == value, 0].mean()) for value in [1, -1]]
+    guiding = (
+        [0.5 * (signs[0] * c[:, 1] + signs[1] * c[:, 2]) for c in curves]
+        if comparison != "inclination"
+        else [d["state"][:, outer, 2].mean(axis=1) for d in datasets]
+    )
     extrema = np.concatenate(guiding)
     orbit.set_ylim(min(-5, float(extrema.min()) - 5), max(10, float(extrema.max()) + 5))
     orbit.set_ylabel("Mean orbit shift away from moon orbit (m)")
     orbit.set_title(
         "Orbit estimate (transient near encounter)", color="white", fontsize=10
     )
-    height.set_ylim(0, max(float(c[:, 3].max()) for c in curves) * 1.2)
+    thickness = (
+        [c[:, 3] for c in curves]
+        if comparison != "inclination"
+        else [np.std(d["state"][:, outer, 2], axis=1) for d in datasets]
+    )
+    if comparison == "inclination":
+        orbit.set_ylabel("Mean outer packet height (m)")
+        orbit.set_title("Coherent vertical lift", color="white", fontsize=10)
+    height.set_ylim(0, max(float(h.max()) for h in thickness) * 1.2)
     height.set_ylabel("Core RMS height spread (m)")
     height.set_title(
         "Vertical motion in the same core grains", color="white", fontsize=10
@@ -553,8 +684,20 @@ def animate_pair(out, count):
         color="white",
         fontsize=9,
     )
+    movie_name = (
+        f"coupled_{count}"
+        if comparison == "moon"
+        else f"inclination_{count}"
+        if comparison == "inclination"
+        else f"crossing_{count}"
+    )
+    event_name = (
+        "predicted stream meeting"
+        if comparison == "streams"
+        else "nominal moon encounter"
+    )
     with PillowWriter(fps=10).saving(
-        fig, str(out / f"coupled_{count}.gif"), dpi=90
+        fig, str(out / f"{movie_name}.gif"), dpi=90
     ) as writer:
         for frame in range(0, len(times), 2):
             for k in [0, 1]:
@@ -565,14 +708,16 @@ def animate_pair(out, count):
                         centers[k][: frame + 1, group, 0] / 1000,
                     )
                 orbit_lines[k].set_data(times[: frame + 1], guiding[k][: frame + 1])
-                height_lines[k].set_data(times[: frame + 1], curves[k][: frame + 1, 3])
+                height_lines[k].set_data(times[: frame + 1], thickness[k][: frame + 1])
             clock.set_text(
-                f"Time: {times[frame]:+.2f} orbits from encounter | Approaching contacts: {int(curves[0][frame, 7])} on / {int(curves[1][frame, 7])} off"
+                f"Time: {times[frame]:+.2f} orbits from {event_name} | Contacts: {int(curves[0][frame, 7])} / {int(curves[1][frame, 7])}"
             )
             writer.grab_frame()
             if frame == 120:
                 fig.savefig(
-                    out / f"coupled_{count}.png", dpi=120, facecolor=fig.get_facecolor()
+                    out / f"{movie_name}.png",
+                    dpi=120,
+                    facecolor=fig.get_facecolor(),
                 )
     plt.close(fig)
 
@@ -582,6 +727,11 @@ def main():
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument("--counts", nargs="+", type=int, default=[128, 288, 512])
     parser.add_argument("--controls", action="store_true")
+    parser.add_argument(
+        "--inclined",
+        action="store_true",
+        help="Also test a documented 8.6 km moon vertical amplitude at the smallest count",
+    )
     args = parser.parse_args()
     if args.counts != sorted(set(args.counts)):
         parser.error("Counts must be increasing and distinct")
@@ -605,6 +755,15 @@ def main():
         save_case(args.out, f"full_{n}", cfg)
         save_case(args.out, f"no_moon_{n}", replace(cfg, moon_gravity=False))
         animate_pair(args.out, n)
+    if args.inclined:
+        tilted = Packet(count=args.counts[0], moon_vertical_amplitude_m=8600)
+        save_case(args.out, f"inclined_{tilted.count}", tilted)
+        save_case(
+            args.out,
+            f"inclined_half_step_{tilted.count}",
+            replace(tilted, dt_s=tilted.dt_s / 2),
+        )
+        animate_pair(args.out, tilted.count, comparison="inclination")
     if args.controls:
         cfg = Packet(count=args.counts[0])
         for name, c in [

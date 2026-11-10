@@ -106,3 +106,44 @@ def test_contact_counter_records_actual_energy_loss():
     assert contacts["approaching_calls"] == 1
     assert contacts["dissipated_J"] == pytest.approx(0.75 * cfg.grain_mass)
     assert sum(p.m * p.vx for p in sim.particles) == pytest.approx(0, abs=1e-10)
+
+
+def test_inclined_moon_drives_the_same_three_dimensional_equations():
+    cfg = Packet(count=8, collisions=False, moon_vertical_amplitude_m=8600)
+    sim, layout, _ = setup(cfg)
+    while sim.N > 2:
+        sim.remove(index=sim.N - 1)
+    sim.particles[1].y = 0
+    p = sim.particles[1]
+    initial = np.array([p.x, p.y, p.z, p.vx, p.vy, p.vz])
+    units = np.array([HILL, HILL, HILL, OMEGA * HILL, OMEGA * HILL, OMEGA * HILL])
+    duration = 1000.0
+    reference = solve_ivp(
+        rhs,
+        [0, duration * OMEGA],
+        initial / units,
+        args=(Encounter(vertical_amplitude_m=8600),),
+        method="DOP853",
+        rtol=1e-12,
+        atol=1e-14,
+    )
+    sim.steps(int(duration / cfg.dt_s))
+    p = sim.particles[1]
+    np.testing.assert_allclose(
+        [p.x, p.y, p.z], reference.y[:3, -1] * HILL, rtol=0, atol=0.001
+    )
+    moon = sim.particles[0]
+    assert moon.z == pytest.approx(8600 * np.sin(duration * OMEGA), abs=1e-5)
+
+
+def test_direct_packet_energy_is_conservative_without_contacts():
+    from keeler.coupled import energy
+
+    cfg = Packet(count=8, collisions=False)
+    sim, layout, _ = setup(cfg)
+    q, moon = read_frame(sim, cfg, layout)
+    before = energy(sim, cfg, q, moon)
+    sim.steps(100)
+    q, moon = read_frame(sim, cfg, layout)
+    after = energy(sim, cfg, q, moon)
+    assert abs(after - before) < 1e-4
