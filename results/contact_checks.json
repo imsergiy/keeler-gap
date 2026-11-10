@@ -1,0 +1,100 @@
+{
+  "meaning": "Fraction of grains with a center separation below 0.9 times the sum of radii, at start/middle/end. Three snapshots do not bound every contact.",
+  "cases": {
+    "box_bridges": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_elastic": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_encounter_energy": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_encounter_energy_half_step": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_gravity_ghosts2": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_gravity_half_step": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_gravity_tighter": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_half_step": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_inelastic": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_larger_box": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_no_collisions": [
+      0.0,
+      0.18098159509202455,
+      0.2116564417177914
+    ],
+    "box_radius_1m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_radius_1m_seed43": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_radius_4m": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_radius_4m_large": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_radius_4m_seed43": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_seed_43": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_seed_44": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "box_self_gravity": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  }
+}

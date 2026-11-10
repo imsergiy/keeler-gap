@@ -1,0 +1,61 @@
+{
+  "config": {
+    "count": 128,
+    "radius_m": 2.0,
+    "material_density": 450.0,
+    "surface_density": 300.0,
+    "center_m": 21250.0,
+    "packet_centres_xy_m": [
+      [
+        21000.0,
+        287671.0569944064
+      ],
+      [
+        23000.0,
+        365435.75462141825
+      ]
+    ],
+    "height_m": 5.0,
+    "upstream_orbits": 4,
+    "downstream_orbits": 2,
+    "dt_s": 0.5,
+    "seed": 42,
+    "moon_vertical_amplitude_m": 0.0,
+    "moon_vertical_phase_rad": 0.0,
+    "moon_gravity": true,
+    "self_gravity": false,
+    "collisions": true,
+    "restitution": "bridges"
+  },
+  "grain_mass_kg": 15079.644737231007,
+  "side_length_m": 56.71852322897651,
+  "actual_surface_density_kg_m2": 300.00000000000006,
+  "normal_optical_depth": 0.25000000000000006,
+  "initial_thermal_speed_m_s": 0.000610584116233958,
+  "core_grains": 128,
+  "columns": [
+    "orbits",
+    "core_packet_a_guiding_shift_m",
+    "core_packet_b_guiding_shift_m",
+    "core_height_rms_m",
+    "core_abs_height_p99_m",
+    "core_mean_z_m",
+    "core_vertical_oscillator_energy_J_kg",
+    "contacts",
+    "dissipated_J",
+    "rotating_energy_J",
+    "corrected_energy_error_J",
+    "deep_overlap_fraction",
+    "packet_speed_dt_over_radius"
+  ],
+  "elapsed_seconds": 86.12948914198205,
+  "rebound_version": "4.4.10",
+  "gravity_solver": "basic",
+  "contact_max_normal_speed_m_s": 0.198103441801363,
+  "contact_tree_extent_m": 4000000.0,
+  "model": "Finite open packets; Hill planetary tide; massive moon and grains; physical hard spheres; no target waves or heating kicks",
+  "max_sampled_step_ratio": 0.17389360144064675,
+  "max_sampled_deep_overlap_fraction": 0.0,
+  "energy_diagnostic_note": "Rotating energy includes moon and grain potentials; collision loss is added back.",
+  "max_corrected_energy_error_J": 7.309019565582275e-05
+}

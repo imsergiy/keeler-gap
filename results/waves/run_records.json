@@ -1,0 +1,216 @@
+{
+  "initial_run_manifest": {
+    "commit": "242a9c464ad64e4db10b96aeed1b3c9036f08bf5",
+    "source_sha256": "a63d10ba9e87a3d4567bc147b30eb17d4ad8bbdebde074798d830ecb6a7d1be2",
+    "elapsed_seconds": 201.79109898395836,
+    "interpolation_check": {
+      "method": "Same three tracks, 2401 versus 4801 interpolation samples",
+      "max_position_difference_m": 1.9186545447963386
+    },
+    "initial_gap_width_m": 42000.0,
+    "radial_strip_width_m": 10000.0,
+    "profile_definition": "Lower tenth percentile of outer radial position in fixed downstream bins, at four orbits. Not a physical or optical sharp edge.",
+    "sampling": "Nested Halton points, b density proportional to b; identical reflected inner strip. Equal weight 1/N per marker. Finite packet, no reinjection.",
+    "files": {
+      "interpolation_check.json": "317951e02f526f8afec043d2089b0658a43583642a90886bf8050fc1a5eaf778",
+      "markers_1000.npz": "f96b4f66acc85b4864e7b73686aabbb6ba6ec8f8b67c24743d32bfb9311faf67",
+      "markers_16000.npz": "ec9aa4dc8fbc9c78a12e3f65854c412f1a8b11552de69d3772d72d66f21cfb3e",
+      "markers_250.npz": "828cb8a061909673485f85f7bcccdb90101e9d5418c79a287b86477a2d4329cc",
+      "markers_4000.npz": "789d60fd46cfb3622703878ffc38820cabd170be68b90b4fbfa4ddeaeea0b1a8",
+      "profile_1000.csv": "c15454bb16e9e72c0c8977b905a63d3218f8d7baf1740e06692bf2ba73c9b356",
+      "profile_16000.csv": "ec9b5246126d2143fa9a51b08dc2772bc2643835e9b4378f2abb7b9461be6b77",
+      "profile_250.csv": "961c8fcce155b5532b1552f244e966fc696257f46c28be6cf0c6fb34a26a69f6",
+      "profile_4000.csv": "a111edb79b33ac0f73d2caf96e7e41e854910d040a783044446aef6e15f76eb8",
+      "profiles.png": "9655dc47af0783bba96dab249037f7a097488044f857c8d3553fd39d48e72ab9",
+      "resolution.json": "c55b13db7bfd310d4e21f21e91af06555ab4a217b90304e2430da64ccacc9320",
+      "wave_1000.gif": "54492f9ce301e25693714c389e7b3efa1965e063cf4723e001bb63c007cccaf0",
+      "wave_1000.json": "4ff9ec089a7e0c5d4d97548a004c32cb97157fb4994c1fd5e03bb742320a0911",
+      "wave_1000.png": "d74ca9d62d7d68bc46e1a5a626b8a9d9902e273731f82c5223142975b22e9a7e",
+      "wave_16000.gif": "7ccc663abbd20920de165294fa1a3b0740cdff2d929e232ef41806ea64b037ef",
+      "wave_16000.json": "b58b5b0e859823309a926b048489fcfe10144b20415bbaba001a9970679b13a9",
+      "wave_16000.png": "5ba9b3983c3e9d7e57b7a6370390ef60b3c016a9f3be7c517ce5f8af92f2ba1f",
+      "wave_250.gif": "822ed3e201d66441f3b8c4993a49f217a28094372b454d6e9e2e1b4244180607",
+      "wave_250.json": "177d41f42b4f2d99d92db7e3d8287ea85d1feb283d618ed6c8f20acb9f6e8b9e",
+      "wave_250.png": "372b97b2ed6c64b99a898a6861f0aa0c34d4a22568c91da61d1821baae19c5c7",
+      "wave_4000.gif": "96a49a99df575bd27dbea80d896717df124bc26d1ff278e15a9b69ac4d508be5",
+      "wave_4000.json": "b316450efc60f95f114f32f8f4ff2f437e3493b161089141245a7ae0dfa5c7e7",
+      "wave_4000.png": "e1968dd2bab5752b9be5f0a4317f33507de49e1ca6aba8b4f8d8f759fe2644a6"
+    }
+  },
+  "initial_summaries": [
+    {
+      "markers": 250,
+      "independent_outer_tracks": 125,
+      "mean_outward_guiding_shift_m": 36.2455277707675,
+      "mean_shift_change_percent": null,
+      "edge_profile_rms_change_m": null,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 3,
+      "max_new_track_jacobi_absolute_drift": 8.634373216409585e-10,
+      "gif": "wave_250.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 32.005201301013585
+    },
+    {
+      "markers": 1000,
+      "independent_outer_tracks": 500,
+      "mean_outward_guiding_shift_m": 35.63888744157309,
+      "mean_shift_change_percent": 1.67369705038114,
+      "edge_profile_rms_change_m": 1816.8280705313969,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 14,
+      "max_new_track_jacobi_absolute_drift": 2.5836186523520155e-09,
+      "gif": "wave_1000.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 34.74432281398913
+    },
+    {
+      "markers": 4000,
+      "independent_outer_tracks": 2000,
+      "mean_outward_guiding_shift_m": 35.46089748996656,
+      "mean_shift_change_percent": 0.4994262289986673,
+      "edge_profile_rms_change_m": 724.764892657201,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 65,
+      "max_new_track_jacobi_absolute_drift": 2.7337989649822703e-09,
+      "gif": "wave_4000.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 45.634655011992436
+    },
+    {
+      "markers": 16000,
+      "independent_outer_tracks": 8000,
+      "mean_outward_guiding_shift_m": 35.415163821350404,
+      "mean_shift_change_percent": 0.1289692925259378,
+      "edge_profile_rms_change_m": 180.3950600142669,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 250,
+      "max_new_track_jacobi_absolute_drift": 2.7162485594089958e-09,
+      "gif": "wave_16000.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 88.08219760400243
+    }
+  ],
+  "refinement_run_manifest": {
+    "commit": "799e5cbc51a025952c8c58446d39f3a5167deb71",
+    "working_tree_dirty": false,
+    "source_sha256": "b94894a16db58785409c84287d52d263eb8fc273e39e4ba9dd5898aa3e527fb9",
+    "elapsed_seconds": 376.1454579529818,
+    "interpolation_check": {
+      "method": "Same three tracks, 2401 versus 4801 interpolation samples",
+      "max_position_difference_m": 1.9186545447963386
+    },
+    "initial_gap_width_m": 42000.0,
+    "radial_strip_width_m": 10000.0,
+    "profile_definition": "Lower tenth percentile of outer radial position in fixed downstream bins, at four orbits. Not a physical or optical sharp edge.",
+    "sampling": "Nested Halton points, b density proportional to b; identical reflected inner strip. Equal weight 1/N per marker. Finite packet, no reinjection.",
+    "files": {
+      "interpolation_check.json": "317951e02f526f8afec043d2089b0658a43583642a90886bf8050fc1a5eaf778",
+      "markers_16000.npz": "d5f9f6b8ecf204a69272bbe5d270192bc34c79b76425d8a6f6efdcc1b44effbb",
+      "markers_64000.npz": "0e161ce9997bfdbd6109184861a7b7c9bd01183157623d99b09abe27970d821e",
+      "profile_16000.csv": "b727e718d8263458088cad59836a6c7f3a9b6f03b18dc3789b7f6e176d9e7c37",
+      "profile_64000.csv": "e75babda6754d30ac8147af2e10b23c06b9be056d04d32e4bc6c4f6ebc9ef630",
+      "profiles.png": "77388019edb62ed40055a9773df5701d29a4bbc8140f453f197982a50f6258a0",
+      "resolution.json": "1ded58a8e2196851d3143c57a17c297122a995f24b4018ec5f68939e1d001a97",
+      "wave_16000.gif": "7ccc663abbd20920de165294fa1a3b0740cdff2d929e232ef41806ea64b037ef",
+      "wave_16000.json": "75a8df289cca04793416a9b1c67db3d0ed801b284a91135936bf9723ca9dfb41",
+      "wave_16000.png": "5ba9b3983c3e9d7e57b7a6370390ef60b3c016a9f3be7c517ce5f8af92f2ba1f",
+      "wave_64000.gif": "d97b33a0a76984b4c618e1e2c3d9db4caff8bfa6bac1db11a08a15517b6bd039",
+      "wave_64000.json": "a9c54919af92863670ee1770eebe6663fc96549456ca7f8ef9c4d535e5422ef9",
+      "wave_64000.png": "4cb85ea69220253483c62eaf7294881b5c500357adcb5962072d271540b4cd2d"
+    }
+  },
+  "refinement_summaries": [
+    {
+      "markers": 16000,
+      "independent_outer_tracks": 8000,
+      "mean_outward_guiding_shift_m": 35.41516381563111,
+      "shift_epoch": "Six orbits after each track nominal conjunction, not one common movie time",
+      "profile_movie_orbits": 4,
+      "mean_shift_change_percent": null,
+      "edge_profile_rms_change_m": null,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 250,
+      "max_new_track_jacobi_absolute_drift": 2.712468472054752e-09,
+      "gif": "wave_16000.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 104.22832045902032
+    },
+    {
+      "markers": 64000,
+      "independent_outer_tracks": 32000,
+      "mean_outward_guiding_shift_m": 35.40367172364516,
+      "shift_epoch": "Six orbits after each track nominal conjunction, not one common movie time",
+      "profile_movie_orbits": 4,
+      "mean_shift_change_percent": 0.032449636674780624,
+      "edge_profile_rms_change_m": 56.81247237921869,
+      "occupied_profile_bins": 20,
+      "minimum_markers_per_profile_bin": 983,
+      "max_new_track_jacobi_absolute_drift": 2.775919938358129e-09,
+      "gif": "wave_64000.gif",
+      "model": "Circular coplanar moon; independent massless orbit markers",
+      "config": {
+        "mass_factor": 1.0,
+        "radial_epicycle_m": 0.0,
+        "vertical_amplitude_m": 0.0,
+        "phase": 0.0,
+        "start": -120.0,
+        "end": 37.69911184307752,
+        "samples": 2401,
+        "rtol": 2e-10
+      },
+      "elapsed_seconds": 270.74308202497195
+    }
+  ],
+  "note": "Original diagnostics used 100\u2013900 km, including the finite packet front. Published profiles are recomputed from the same saved positions on 100\u2013700 km. GIFs and orbit integrations are unchanged. Initial uncommitted wave source matches commit ee3b11c; refinement ran at 799e5cb. Raw NPZ files stay outside git and can be regenerated."
+}
