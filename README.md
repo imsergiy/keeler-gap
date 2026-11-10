@@ -42,6 +42,16 @@ uv run python -m keeler budget --width-km 10 --length-km 1000 --tau .5 --radius-
 
 This estimates the cost of a resolved domain. The current code does **not** implement that complete gap-edge domain.
 
+## Watch the horizontal-wave refinement
+
+The new GIF series compares 250, 1,000, 4,000, 16,000, and 64,000 orbit markers under the same gravity and initial geometry. Read the [sampling results](REPORT.md#update-particle-count-refinement-with-gifs), or [play the finest GIF](results/waves/wave_64000.gif). These are collisionless markers; the imposed initial gap and omitted collisions remain model assumptions.
+
+```sh
+uv run python -m keeler.waves --out runs/wave-study
+```
+
+The command writes each GIF as its stage finishes, with profiles, numerical checks, and a final comparison to the largest count. Use a new output directory. `--counts 250 1000` selects a shorter run. Raw marker arrays are saved under the output directory, outside git.
+
 ## Files and outputs
 
 - [REPORT.md](REPORT.md): findings, equations, observation comparison, and limitations.

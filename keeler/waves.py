@@ -74,6 +74,12 @@ def profile(positive_positions):
     return np.asarray(counts), np.asarray(edge)
 
 
+def profile_difference(current, previous):
+    if np.isnan(current).any() or np.isnan(previous).any():
+        return None
+    return float(np.sqrt(np.mean((current - previous) ** 2)))
+
+
 def animate(path, positive, impact, initial_age, count):
     plt.rcParams.update({"font.size": 10})
     fig, axes = plt.subplots(2, 1, figsize=(10, 6.8), sharex=True, sharey=True)
@@ -227,12 +233,7 @@ def main():
         valid = np.isfinite(edge)
         change = None
         if previous_profile is not None:
-            common = valid & np.isfinite(previous_profile)
-            change = (
-                float(np.sqrt(np.mean((edge[common] - previous_profile[common]) ** 2)))
-                if common.any()
-                else None
-            )
+            change = profile_difference(edge, previous_profile)
         mean = float(np.mean(all_shifts))
         summary = {
             "markers": count,
@@ -289,8 +290,19 @@ def main():
         print("DONE", count, json.dumps(summary), flush=True)
     interpolation = interpolation_check(args.out)
     fig, ax = plt.subplots(figsize=(9, 4), layout="constrained")
-    for n in args.counts:
+    reference_profile = np.loadtxt(
+        args.out / f"profile_{args.counts[-1]}.csv", delimiter=",", skiprows=1
+    )[:, 2]
+    reference_mean = summaries[-1]["mean_outward_guiding_shift_m"]
+    for summary, n in zip(summaries, args.counts):
         a = np.loadtxt(args.out / f"profile_{n}.csv", delimiter=",", skiprows=1)
+        summary["reference_markers"] = args.counts[-1]
+        summary["mean_shift_difference_from_reference_percent"] = 100 * abs(
+            summary["mean_outward_guiding_shift_m"] / reference_mean - 1
+        )
+        summary["profile_rms_difference_from_reference_m"] = profile_difference(
+            a[:, 2], reference_profile
+        )
         ax.plot(a[:, 0] / 1000, a[:, 2] / 1000, ".-", label=f"{n:,} markers")
     ax.set(
         xlabel="Outer-ring downstream distance (km)",
@@ -300,12 +312,17 @@ def main():
     ax.legend()
     fig.savefig(args.out / "profiles.png", dpi=160)
     plt.close(fig)
+    (args.out / "resolution.json").write_text(
+        json.dumps(summaries, indent=2, allow_nan=False) + "\n"
+    )
     manifest = {
         **source_identity,
         "elapsed_seconds": time.monotonic() - started,
         "interpolation_check": interpolation,
         "initial_gap_width_m": 2 * BMIN,
         "radial_strip_width_m": BMAX - BMIN,
+        "profile_bin_edges_m": PROFILE_BINS_M.tolist(),
+        "reference_is_exact": False,
         "profile_definition": "Lower tenth percentile of outer radial position in fixed downstream bins, at four orbits. Not a physical or optical sharp edge.",
         "sampling": "Nested Halton points, b density proportional to b; identical reflected inner strip. Equal weight 1/N per marker. Finite packet, no reinjection.",
         "files": {

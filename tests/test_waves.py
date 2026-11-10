@@ -9,6 +9,7 @@ from keeler.waves import (
     interpolate_positions,
     packet_sample,
     profile,
+    profile_difference,
 )
 
 
@@ -55,3 +56,10 @@ def test_profile_window_stays_behind_the_slowest_packet_front():
     t, q = integrate(b, Encounter(samples=2401))
     front = interpolate_positions(t, q, np.array([[8 * np.pi]]))[0, 0]
     assert PROFILE_BINS_M[-1] < -front[1] - 40_000
+
+
+def test_profile_comparison_requires_every_measurement_bin():
+    a = np.array([2.0, 0.0])
+    b = np.array([0.0, 0.0])
+    assert profile_difference(a, b) == np.sqrt(2)
+    assert profile_difference(np.array([0.0, np.nan]), b) is None

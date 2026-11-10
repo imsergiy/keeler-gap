@@ -8,6 +8,38 @@ The calculations support orbital scattering and collision-driven vertical heatin
 | Why are the waves brighter? | A slab calculation shows why mass density alone does not determine brightness. Breaking opaque clumps can expose more scattering area. | The actual particle arrangement, phase function, mutual shadows, and camera geometry of both images. |
 | Why does material rise and then settle? | Three-dimensional hard-sphere controls transfer horizontal energy into vertical motion. Inelastic runs can then lose vertical energy; the collisionless control cannot. | The observed 0.5–1.5 km structures, their downstream location, and their damping rate in a self-consistent edge calculation. |
 
+## Update: particle-count refinement with GIFs
+
+The new series isolates the first question: can a moon's gravity make horizontal waves? The top panel shows the same material under Saturn's gravity alone. The bottom adds Daphnis. The camera follows the moon; one orbit means one circuit around Saturn, about 14.3 hours.
+
+The shared upstream initial conditions impose a 42 km gap and two 10 km-wide strips of incoming material. Some markers are already near the moon in the first movie frame; their approach was integrated from far upstream. This tests waves on existing edges, not the creation of the gap. The moon is circular and coplanar. There are no collisions, mutual particle gravity, or light-scattering calculations. Dots and the moon symbol are graphical markers, not physical grain sizes. More dots do not increase the ring's mass or the force on any marker.
+
+![Gravity-only wave experiment](results/waves/wave_64000.gif)
+
+The nested counts are 250, 1,000, 4,000, 16,000, and 64,000. Half the markers are in the outer strip. The inner strip is an exact reflected copy, which is valid for this circular Hill model. New markers sample more orbits of the same fixed system. Integration is batched to stay within the container memory limit.
+
+The table compares each count with the 64,000-marker result. The reference is a finer comparison, not an exact solution or a proof of a minimum count. Each count links to its GIF.
+
+| Markers | Mean outer orbit shift (m) | Difference in mean vs. reference | Difference in sampled profile vs. reference (m RMS) |
+| ---: | ---: | ---: | ---: |
+| [250](results/waves/wave_250.gif) | 36.246 | 2.378% | 2397.2 |
+| [1,000](results/waves/wave_1000.gif) | 35.639 | 0.664% | 792.2 |
+| [4,000](results/waves/wave_4000.gif) | 35.461 | 0.162% | 215.0 |
+| [16,000](results/waves/wave_16000.gif) | 35.415 | 0.032% | 64.0 |
+| [64,000](results/waves/wave_64000.gif) | 35.404 | 0.000% | 0.0 |
+
+For this experiment, **1,000 markers give a mean orbit shift within 1% of the finest run**. **16,000 markers give the sampled wave profile within 100 m RMS of the finest run**. The 16,000-to-64,000 profile difference is 64 m. These are adequate tested counts for the two chosen statistics, not universal particle requirements. A few hundred markers show motion but leave the edge poorly sampled.
+
+The mean shift is for outer tracks measured six orbital periods after each track's nominal conjunction. It is not the mean instantaneous radial position in the movie. The inner tracks have equal inward shifts in this symmetric model. The new mean is over a strip initially 21–31 km from the moon; it is not the earlier close-encounter case at 13 km.
+
+The profile is measured at movie time four orbits. It uses the lower tenth percentile of outer radial position in 15 fixed, 40 km-wide bins, 100–700 km downstream. This is a defined sampling statistic, not an optical or mathematical sharp edge. The preliminary task updates used bins out to 900 km. Review found that those far bins included the finite packet's front. The final window excludes it, and a regression test checks the margin. The trajectories and GIFs did not change.
+
+![Marker-count comparison](results/waves/profiles.png)
+
+Replaying the shared 16,000-marker set with different integration batches changed positions by at most 0.00001 m. Doubling the movie interpolation samples changed three test tracks by less than 2 m. These checks keep the measured sampling differences separate from integration and display interpolation errors. All 24 physics and sampling tests pass.
+
+This series establishes convergence of selected statistics within a gravity-only model. It does not establish the real ring's damping, brightness, or vertical splashes. The markers can cross without colliding, and increasing their count does not repair that omitted physics. [Full numerical results](results/waves/resolution.json), [study definitions](results/waves/study.json), and [original run records](results/waves/run_records.json) preserve the measurements and their limits.
+
 ## Orbital scattering and apparent retreat
 
 The nominal moon Hill radius is 4.861 km and the local orbital period is 14.292 hours. The circular-moon calculation starts upstream and follows particles for six orbital periods after nominal conjunction. The positive offsets below refer to the outer edge. The circular inner-edge result has opposite sign and equal magnitude, as checked by a test.
