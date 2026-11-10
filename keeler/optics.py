@@ -1,4 +1,5 @@
 """Illustrative single-scattering slab response, not calibrated Cassini photometry."""
+
 import numpy as np
 
 
