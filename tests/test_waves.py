@@ -48,3 +48,10 @@ def test_profile_reports_empty_bins_without_inventing_an_edge():
     assert edge[0] == 21200
     assert np.all(counts[1:] == 0)
     assert np.isnan(edge[1:]).all()
+
+
+def test_profile_window_stays_behind_the_slowest_packet_front():
+    b = np.array([BMIN])
+    t, q = integrate(b, Encounter(samples=2401))
+    front = interpolate_positions(t, q, np.array([[8 * np.pi]]))[0, 0]
+    assert PROFILE_BINS_M[-1] < -front[1] - 40_000

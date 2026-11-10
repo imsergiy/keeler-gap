@@ -22,7 +22,7 @@ BMIN = 21_000.0
 BMAX = 31_000.0
 MOVIE_ORBITS = np.linspace(0, 6, 97)
 PROFILE_FRAME = 64
-PROFILE_BINS_M = np.arange(100_000, 900_001, 40_000)
+PROFILE_BINS_M = np.arange(100_000, 700_001, 40_000)
 
 
 def packet_sample(count):
@@ -147,7 +147,7 @@ def animate(path, positive, impact, initial_age, count):
                 paired = np.concatenate((p, -p))
                 artist.set_offsets(paired[:, [1, 0]] / 1000)
             clock.set_text(
-                f"Elapsed time: {orbit:.2f} Saturn orbits ({orbit * PERIOD / 3600:.1f} hours)"
+                f"Elapsed time: {orbit:.2f} orbits around Saturn ({orbit * PERIOD / 3600:.1f} hours)"
             )
             writer.grab_frame()
             if i == PROFILE_FRAME:
@@ -181,7 +181,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", type=Path, required=True)
     parser.add_argument(
-        "--counts", type=int, nargs="+", default=[250, 1000, 4000, 16000]
+        "--counts", type=int, nargs="+", default=[250, 1000, 4000, 16000, 64000]
     )
     args = parser.parse_args()
     if args.counts != sorted(set(args.counts)) or any(
@@ -238,6 +238,7 @@ def main():
             "markers": count,
             "independent_outer_tracks": new,
             "mean_outward_guiding_shift_m": mean,
+            "shift_population": "Outer strip; the inner strip is its exact mirror",
             "shift_epoch": "Six orbits after each track nominal conjunction, not one common movie time",
             "profile_movie_orbits": 4,
             "mean_shift_change_percent": None
