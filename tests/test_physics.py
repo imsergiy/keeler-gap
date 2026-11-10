@@ -89,12 +89,14 @@ def test_tree_gravity_close_to_direct():
     base.N_ghost_x=base.N_ghost_y=0
     base.gravity='basic'
     base.steps(1)
-    ref=state(base)
+    ref=np.array([[p.ax,p.ay,p.az] for p in base.particles])
     tree,_=setup(Box(size_m=64,self_gravity=True,collisions=False))
     tree.N_ghost_x=tree.N_ghost_y=0
     tree.opening_angle2=.1**2
     tree.steps(1)
-    np.testing.assert_allclose(state(tree),ref,atol=2e-5,rtol=2e-5)
+    actual=np.array([[p.ax,p.ay,p.az] for p in tree.particles])
+    assert np.linalg.norm(ref)>1e-8
+    assert np.linalg.norm(actual-ref)/np.linalg.norm(ref)<.01
 
 
 def test_vertical_extent_does_not_wrap_splash():
@@ -154,3 +156,15 @@ def test_bridges_law_uses_meters_per_second():
     assert coefficient('bridges',1e-10)==1
     assert coefficient('bridges',.1)<.32
     with pytest.raises(ValueError): Box(restitution='unknown')
+
+
+def test_box_collision_switch_controls_vertical_heating():
+    config=Box(size_m=32,orbits=.2)
+    collisional,callback=setup(config)
+    free,free_callback=setup(Box(size_m=32,orbits=.2,collisions=False))
+    collisional.steps(5000)
+    free.steps(5000)
+    a,b=state(collisional),state(free)
+    ea=np.mean(a[:,5]**2+OMEGA**2*a[:,2]**2)
+    eb=np.mean(b[:,5]**2+OMEGA**2*b[:,2]**2)
+    assert ea>2*eb

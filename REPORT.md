@@ -12,7 +12,14 @@ The calculations support orbital scattering and collision-driven vertical heatin
 
 The nominal moon Hill radius is 4.861 km and the local orbital period is 14.292 hours. The circular-moon calculation starts upstream and follows particles for six orbital periods after nominal conjunction. The positive offsets below refer to the outer edge. The circular inner-edge result has opposite sign and equal magnitude, as checked by a test.
 
-<!-- encounter-table -->
+| Initial offset (km) | Guiding-center shift after six orbits (km) | Radial epicycle amplitude (km) |
+| --- | --- | --- |
+| 13 | 4.950 | 10.738 |
+| 14 | 2.040 | 6.816 |
+| 15 | 1.091 | 5.094 |
+| 20 | 0.148 | 2.206 |
+| 21 | 0.109 | 1.961 |
+| 25 | 0.037 | 1.317 |
 
 These are **guiding-center changes**, not radial excursions. The calculation uses the Hill approximation to semimajor axis. At 20 km offset the permanent change is about 0.15 km, while the radial epicycle amplitude is about 2.21 km. It would be incorrect to call that entire 2.21 km a semimajor-axis increase.
 
@@ -61,6 +68,8 @@ The base heights are below the reported 0.5–1.5 km structures. The initial hor
 At a chosen solar elevation of 1°, a 1 km height casts a 57.3 km shadow on a flat plane. This follows from `length = height / tan(elevation)`. The actual image needs its solar elevation, azimuth, camera projection, obscuration, and optical threshold. The supplied caption alone does not provide that full geometry.
 
 ## Numerical checks and limits
+
+The gravity-accuracy controls cover only the first half orbit, through the initial heating peak. The baseline gravity run covers three orbits, but its late damping curve has not passed a full-duration gravity-convergence study.
 
 The tests cover free shear, the Jacobi invariant and its scattering-energy relation, mirror symmetry, planar symmetry, free vertical energy, binary collision momentum and energy, oblique vertical excitation, physical mass/radius scaling, initial nonoverlap, gravity-tree agreement with direct gravity, sheared contact checks, and the vertical boundary. The run fails on particle loss, nonfinite output, a sampled excessive crossing speed, or a vertical boundary approach.
 

@@ -139,7 +139,7 @@ def diagnostics(q):
             np.max(np.linalg.norm(np.column_stack((vx,vy,vz)), axis=1))]
 
 
-def run(config, samples=121):
+def run(config, samples=121, progress=False):
     sim, callback = setup(config)
     rows, snapshots = [], []
     started = time.monotonic()
@@ -147,7 +147,7 @@ def run(config, samples=121):
     output_steps = np.unique(np.linspace(0, nsteps, samples).astype(int))
     previous = 0
     max_crossing = 0.0
-    for step in output_steps:
+    for index,step in enumerate(output_steps):
         sim.steps(int(step-previous))
         previous = step
         q = state(sim)
@@ -161,6 +161,8 @@ def run(config, samples=121):
         if crossing > .3:
             raise RuntimeError(f"Step too large: speed*dt/r={crossing:.3g}; reduce dt_s")
         rows.append([sim.t/PERIOD, *d])
+        if progress and index % 20 == 0:
+            print(f"  orbit={sim.t/PERIOD:.3f} height_rms_m={d[0]:.3f}",flush=True)
         if step in (output_steps[0], output_steps[len(output_steps)//2], output_steps[-1]):
             snapshots.append(q)
     return np.asarray(rows), np.asarray(snapshots), {

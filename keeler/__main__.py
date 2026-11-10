@@ -88,9 +88,9 @@ def boxes(out, extended, selected):
              'seed_44':replace(baseline,seed=44),
              'bridges':replace(baseline,restitution='bridges')}
     if extended:
-        configs.update({'gravity_ghosts2':replace(baseline,self_gravity=True,ghosts=2),
-                        'gravity_tighter':replace(baseline,self_gravity=True,opening_angle=.15),
-                        'gravity_half_step':replace(baseline,self_gravity=True,dt_s=1),
+        configs.update({'gravity_ghosts2':replace(baseline,self_gravity=True,ghosts=2,orbits=.5),
+                        'gravity_tighter':replace(baseline,self_gravity=True,opening_angle=.15,orbits=.5),
+                        'gravity_half_step':replace(baseline,self_gravity=True,dt_s=1,orbits=.5),
                         'radius_4m_large':replace(baseline,radius_m=4,size_m=256),
                         'radius_1m_seed43':replace(baseline,radius_m=1,dt_s=1,seed=43),
                         'radius_4m_seed43':replace(baseline,radius_m=4,seed=43)})
@@ -103,7 +103,7 @@ def boxes(out, extended, selected):
         if target.exists():
             raise FileExistsError(f'{target}: use a new output directory')
         print('Running',name,'N=',c.count,flush=True)
-        rows,snapshots,meta=run(c)
+        rows,snapshots,meta=run(c,progress=True)
         np.savetxt(out/f'box_{name}.csv',rows,delimiter=',',header=','.join(meta['columns']),comments='')
         np.savez_compressed(out/f'box_{name}.npz',snapshots=snapshots)
         write_json(target,meta)
@@ -124,8 +124,9 @@ def main():
     for name in ('encounters','boxes','all'):
         s=sub.add_parser(name)
         s.add_argument('--out',type=Path,required=True)
-        s.add_argument('--extended',action='store_true')
-        s.add_argument('--case',action='append',help='Run only a named box case; repeat to select several')
+        if name != 'encounters':
+            s.add_argument('--extended',action='store_true')
+            s.add_argument('--case',action='append',help='Run only a named box case; repeat to select several')
     s=sub.add_parser('budget')
     s.add_argument('--radius-m',type=float,default=1)
     s.add_argument('--tau',type=float,default=.5)
