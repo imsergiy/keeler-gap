@@ -1,0 +1,12 @@
+[project]
+name = "keeler-gap"
+version = "0.1.0"
+description = "Validated, resource-bounded Daphnis encounter and granular mechanism experiments"
+requires-python = ">=3.12"
+dependencies = ["numpy==2.5.4", "scipy==1.18.1", "matplotlib==3.11.2", "rebound==4.4.10"]
+
+[dependency-groups]
+dev = ["pytest==9.2.0"]
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
