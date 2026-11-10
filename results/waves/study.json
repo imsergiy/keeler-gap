@@ -1,0 +1,46 @@
+{
+  "analysis_commit": "7189e4b5c9403a3d16a6aa3a2c917bf6e7ce309d",
+  "analysis_source_sha256": "72cfaebfb054ac8a09988742a3943174ef5b0421e4b225e12a8caecd45efb45c",
+  "model": "Independent orbit markers; circular coplanar Daphnis; Saturn spherical Hill approximation",
+  "initial_gap_km": 42,
+  "radial_strip_width_km": 10,
+  "gap_is_imposed": true,
+  "incoming_sampling": "Nested Halton points; b probability proportional to b, initial encounter ages uniform over four periods. Equal 1/N weights. Inner strip is an exact reflected copy.",
+  "movie": "97 frames covering six periods around Saturn; no collisions, mutual particle gravity, or brightness model. Radial direction stretched; marker sizes are graphical.",
+  "mean_shift_epoch": "Outer tracks only, measured six periods after each nominal conjunction, not at one common packet time.",
+  "profile_epoch": "Common packet time of four periods; lower tenth percentile in 15 fixed 40 km bins from 100 to 700 km downstream.",
+  "criteria": {
+    "mean_sampling_difference_percent": 1,
+    "profile_sampling_difference_m": 100,
+    "reference_markers": 64000,
+    "reference_is_not_an_exact_solution": true
+  },
+  "maximum_replayed_16000_position_difference_m": 9.305611344222195e-06,
+  "interpolation_checks": [
+    {
+      "method": "Same three tracks, 2401 versus 4801 interpolation samples",
+      "max_position_difference_m": 1.9186545447963386
+    },
+    {
+      "method": "Same three tracks, 2401 versus 4801 interpolation samples",
+      "max_position_difference_m": 1.9186545447963386
+    }
+  ],
+  "scope": "Agreement tests marker sampling in this specified packet. It does not validate omitted collisions, domain choices, or the full Cassini observations.",
+  "files": {
+    "profile_1000.csv": "947a1a3122e64c6f12ffd668de57e28adeca5421adeefac4ad37d2176daecbeb",
+    "profile_16000.csv": "64bd14ec1f9274a01a520898669daeaba3f7eb1c6d0e9200b8c13403501294ac",
+    "profile_250.csv": "ef66b7f12770adaf73c776224276af243da3d8f455190c4a50a1cfab861ba8c3",
+    "profile_4000.csv": "fc28f29ff505658e644536a7bed07333860e5882b58df6f2d726f0fddbdf0b0b",
+    "profile_64000.csv": "21be3ed9837ee1553c690ecb5edbef8c1df50c56cba5a5b35a4430134a38bd8d",
+    "profiles.png": "02ebd613922ff249b446ac835ba01136841bde4048a72ed92ae332b31f93fd22",
+    "resolution.csv": "a0b628e49502e9dec8f31c15af74ffb18b0167cf891ca3ca5645c36a4bfee721",
+    "resolution.json": "a5320177e8b2445120da13ae2e8bff96c987f7a9e9899756f0768dbc02c4a8d2",
+    "run_records.json": "e6e30981f2ee8d1a82e3b96a28372e45ea61dc9a18b1872abf04b12b03d9151e",
+    "wave_1000.gif": "54492f9ce301e25693714c389e7b3efa1965e063cf4723e001bb63c007cccaf0",
+    "wave_16000.gif": "7ccc663abbd20920de165294fa1a3b0740cdff2d929e232ef41806ea64b037ef",
+    "wave_250.gif": "822ed3e201d66441f3b8c4993a49f217a28094372b454d6e9e2e1b4244180607",
+    "wave_4000.gif": "96a49a99df575bd27dbea80d896717df124bc26d1ff278e15a9b69ac4d508be5",
+    "wave_64000.gif": "d97b33a0a76984b4c618e1e2c3d9db4caff8bfa6bac1db11a08a15517b6bd039"
+  }
+}
